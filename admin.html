@@ -27,9 +27,10 @@
   .tab-content.active { display: block; }
 
   /* Categorías */
-  .categoria-item { display: flex; align-items: center; gap: 15px; padding: 15px; border: 1px solid #eee; border-radius: 6px; margin-bottom: 10px; background: #fafafa; }
+  .categoria-item { display: flex; align-items: center; gap: 15px; padding: 15px; border: 1px solid #eee; border-radius: 6px; margin-bottom: 10px; background: #fafafa; transition: all 0.2s; }
   .categoria-item.inactiva { opacity: 0.5; background: #f0f0f0; }
-  .drag-handle { cursor: move; font-size: 20px; color: #999; }
+  .categoria-item.dragging { opacity: 0.5; background: #e3f2fd; }
+  .drag-handle { cursor: move; font-size: 20px; color: #999; user-select: none; }
   .categoria-nombre { flex: 1; font-weight: 600; }
   .categoria-actions { display: flex; gap: 8px; }
   .categoria-actions button { padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; }
@@ -51,8 +52,11 @@
   /* Platos */
   .platos-por-categoria { margin-bottom: 40px; }
   .platos-por-categoria h3 { border-bottom: 2px solid #333; padding-bottom: 8px; margin-bottom: 15px; }
-  .plato-item { display: flex; align-items: center; gap: 15px; padding: 12px; border: 1px solid #eee; border-radius: 6px; margin-bottom: 8px; background: white; }
+  .platos-container-cat { min-height: 60px; }
+  .plato-item { display: flex; align-items: center; gap: 15px; padding: 12px; border: 1px solid #eee; border-radius: 6px; margin-bottom: 8px; background: white; transition: all 0.2s; }
   .plato-item.inactivo { opacity: 0.5; background: #f9f9f9; }
+  .plato-item.dragging { opacity: 0.5; background: #e8f5e9; }
+  .plato-item.drag-over { border-top: 3px solid #27ae60; }
   .plato-info { flex: 1; }
   .plato-nombre { font-weight: 600; color: #1a1a1a; }
   .plato-descripcion { font-size: 14px; color: #666; margin-top: 4px; }
@@ -202,26 +206,26 @@ async function cargarCategorias() {
     btn.onclick = () => eliminarCategoria(btn.dataset.id)
   })
 
-  // Drag and drop para reordenar
-  makeSortable(container, categorias)
+  // Drag and drop para reordenar categorías
+  makeSortableCategorias(container)
 
   // Actualizar select de categorías en platos
   actualizarSelectCategorias(categorias)
 }
 
-function makeSortable(container, categorias) {
+function makeSortableCategorias(container) {
   let draggedElement = null
 
   container.querySelectorAll('.categoria-item').forEach(item => {
     item.draggable = true
     
-    item.ondragstart = (e) => {
+    item.ondragstart = () => {
       draggedElement = item
-      item.style.opacity = '0.5'
+      item.classList.add('dragging')
     }
     
     item.ondragend = () => {
-      item.style.opacity = '1'
+      item.classList.remove('dragging')
       draggedElement = null
     }
     
@@ -242,7 +246,6 @@ function makeSortable(container, categorias) {
           item.before(draggedElement)
         }
         
-        // Actualizar orden en BD
         await actualizarOrdenCategorias(container)
       }
     }
@@ -347,13 +350,20 @@ async function cargarPlatos() {
     
     catDiv.innerHTML = `<h3>${cat.nombre}</h3>`
     
+    const platosContainerCat = document.createElement('div')
+    platosContainerCat.className = 'platos-container-cat'
+    platosContainerCat.dataset.categoriaId = cat.id
+    
     if (catPlatos.length === 0) {
-      catDiv.innerHTML += '<div class="empty-state">No hay platos en esta categoría</div>'
+      platosContainerCat.innerHTML = '<div class="empty-state">No hay platos en esta categoría</div>'
     } else {
       catPlatos.forEach(plato => {
         const platoDiv = document.createElement('div')
         platoDiv.className = 'plato-item' + (plato.activo ? '' : ' inactivo')
+        platoDiv.dataset.id = plato.id
+        platoDiv.dataset.categoriaId = plato.categoria_id
         platoDiv.innerHTML = `
+          <span class="drag-handle">☰</span>
           <div class="plato-info">
             <div class="plato-nombre">${plato.plato} ${plato.activo ? '' : '(Desactivado)'}</div>
             ${plato.descripcion ? `<div class="plato-descripcion">${plato.descripcion}</div>` : ''}
@@ -365,14 +375,15 @@ async function cargarPlatos() {
             <button class="btn-eliminar" data-id="${plato.id}">🗑️</button>
           </div>
         `
-        catDiv.appendChild(platoDiv)
+        platosContainerCat.appendChild(platoDiv)
       })
     }
     
+    catDiv.appendChild(platosContainerCat)
     container.appendChild(catDiv)
   })
 
-  // Eventos
+  // Eventos de botones
   container.querySelectorAll('.btn-editar').forEach(btn => {
     btn.onclick = () => editarPlato(btn.dataset.id, platos)
   })
@@ -382,6 +393,73 @@ async function cargarPlatos() {
   container.querySelectorAll('.btn-eliminar').forEach(btn => {
     btn.onclick = () => eliminarPlato(btn.dataset.id)
   })
+
+  // Hacer los platos arrastrables
+  makeSortablePlatos()
+}
+
+function makeSortablePlatos() {
+  let draggedElement = null
+
+  document.querySelectorAll('.plato-item').forEach(item => {
+    item.draggable = true
+    
+    item.ondragstart = () => {
+      draggedElement = item
+      item.classList.add('dragging')
+    }
+    
+    item.ondragend = () => {
+      item.classList.remove('dragging')
+      document.querySelectorAll('.plato-item').forEach(el => el.classList.remove('drag-over'))
+      draggedElement = null
+    }
+    
+    item.ondragover = (e) => {
+      e.preventDefault()
+      if (draggedElement && draggedElement !== item) {
+        // Solo permitir drop si están en la misma categoría
+        if (draggedElement.dataset.categoriaId === item.dataset.categoriaId) {
+          item.classList.add('drag-over')
+        }
+      }
+    }
+    
+    item.ondragleave = () => {
+      item.classList.remove('drag-over')
+    }
+    
+    item.ondrop = async (e) => {
+      e.preventDefault()
+      item.classList.remove('drag-over')
+      
+      if (draggedElement && draggedElement !== item) {
+        // Solo reordenar si están en la misma categoría
+        if (draggedElement.dataset.categoriaId === item.dataset.categoriaId) {
+          const container = item.parentElement
+          const allItems = [...container.querySelectorAll('.plato-item')]
+          const draggedIndex = allItems.indexOf(draggedElement)
+          const targetIndex = allItems.indexOf(item)
+          
+          if (draggedIndex < targetIndex) {
+            item.after(draggedElement)
+          } else {
+            item.before(draggedElement)
+          }
+          
+          await actualizarOrdenPlatos(container)
+        }
+      }
+    }
+  })
+}
+
+async function actualizarOrdenPlatos(container) {
+  const items = [...container.querySelectorAll('.plato-item')]
+  for (let i = 0; i < items.length; i++) {
+    const id = items[i].dataset.id
+    await supabase.from('Menu').update({ orden: i }).eq('id', id)
+  }
 }
 
 function editarPlato(id, platos) {
@@ -394,7 +472,6 @@ function editarPlato(id, platos) {
   document.getElementById('plato-form-title').textContent = '✏️ Editar Plato'
   document.getElementById('cancelPlatoBtn').style.display = 'inline-block'
   
-  // Scroll al formulario
   document.getElementById('tab-platos').scrollIntoView({ behavior: 'smooth' })
 }
 
