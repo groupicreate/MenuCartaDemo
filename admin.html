@@ -1,13 +1,104 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Admin</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Menú</title>
+<link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+<div class="container">
+  <header>
+    <h1>Admin Menú</h1>
+    <p>Editar platos directamente</p>
+  </header>
 
-<h2>Panel admin</h2>
-<p>Aquí luego pondremos formularios</p>
+  <main>
+    <h2>Agregar plato</h2>
+    <form id="addForm">
+      <input type="text" id="plato" placeholder="Nombre del plato" required>
+      <input type="text" id="descripcion" placeholder="Descripción" required>
+      <input type="number" id="precio" placeholder="Precio" step="0.01">
+      <select id="categoria" required>
+        <option value="">Categoría</option>
+        <option value="Entrantes">Entrantes</option>
+        <option value="Primeros platos">Primeros platos</option>
+        <option value="Segundos platos">Segundos platos</option>
+        <option value="Postres">Postres</option>
+        <option value="Bebidas">Bebidas</option>
+      </select>
+      <button type="submit">Agregar</button>
+    </form>
 
+    <h2>Lista de platos</h2>
+    <div id="menuAdmin"></div>
+  </main>
+</div>
+
+<script type="module">
+import { getMenu, addPlato, updatePlato, deletePlato } from './js/supabase.js'
+
+const menuAdmin = document.getElementById('menuAdmin')
+
+async function cargarMenu() {
+  const menu = await getMenu()
+  menuAdmin.innerHTML = ''
+  menu.forEach(item => {
+    const div = document.createElement('div')
+    div.className = 'platoAdmin'
+    div.innerHTML = `
+      <input type="text" value="${item.plato}" id="plato_${item.id}">
+      <input type="text" value="${item.descripcion}" id="desc_${item.id}">
+      <input type="number" value="${item.precio || ''}" id="precio_${item.id}" step="0.01">
+      <select id="cat_${item.id}">
+        <option value="Entrantes" ${item.categoria==='Entrantes'?'selected':''}>Entrantes</option>
+        <option value="Primeros platos" ${item.categoria==='Primeros platos'?'selected':''}>Primeros platos</option>
+        <option value="Segundos platos" ${item.categoria==='Segundos platos'?'selected':''}>Segundos platos</option>
+        <option value="Postres" ${item.categoria==='Postres'?'selected':''}>Postres</option>
+        <option value="Bebidas" ${item.categoria==='Bebidas'?'selected':''}>Bebidas</option>
+      </select>
+      <button onclick="guardar(${item.id})">Guardar</button>
+      <button onclick="borrar(${item.id})">Borrar</button>
+    `
+    menuAdmin.appendChild(div)
+  })
+}
+
+// Agregar
+document.getElementById('addForm').addEventListener('submit', async e => {
+  e.preventDefault()
+  await addPlato(
+    document.getElementById('plato').value,
+    document.getElementById('descripcion').value,
+    document.getElementById('precio').value,
+    document.getElementById('categoria').value
+  )
+  e.target.reset()
+  cargarMenu()
+})
+
+// Guardar cambios
+window.guardar = async id => {
+  await updatePlato(
+    id,
+    document.getElementById(`plato_${id}`).value,
+    document.getElementById(`desc_${id}`).value,
+    document.getElementById(`precio_${id}`).value,
+    document.getElementById(`cat_${id}`).value
+  )
+  cargarMenu()
+}
+
+// Borrar plato
+window.borrar = async id => {
+  if(confirm('¿Borrar este plato?')) {
+    await deletePlato(id)
+    cargarMenu()
+  }
+}
+
+// Cargar al inicio
+cargarMenu()
+</script>
 </body>
 </html>

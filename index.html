@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Carta Restaurante Pepito</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>Restaurante Pepito</h1>
+    <p>Carta digital 🍽️</p>
+  </header>
+
+  <main>
+    <section class="menu-section">
+      <button class="collapsible">Entrantes</button>
+      <div class="content"><ul></ul></div>
+    </section>
+    <section class="menu-section">
+      <button class="collapsible">Primeros platos</button>
+      <div class="content"><ul></ul></div>
+    </section>
+    <section class="menu-section">
+      <button class="collapsible">Segundos platos</button>
+      <div class="content"><ul></ul></div>
+    </section>
+    <section class="menu-section">
+      <button class="collapsible">Postres</button>
+      <div class="content"><ul></ul></div>
+    </section>
+    <section class="menu-section">
+      <button class="collapsible">Bebidas</button>
+      <div class="content"><ul></ul></div>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2026 Restaurante Pepito</p>
+  </footer>
+</div>
+
+<script type="module">
+import { getMenu } from './js/supabase.js'
+
+async function cargarCarta() {
+  const menu = await getMenu()
+  const categorias = ["Entrantes","Primeros platos","Segundos platos","Postres","Bebidas"]
+
+  categorias.forEach(cat => {
+    const section = [...document.querySelectorAll(".menu-section")]
+                     .find(s => s.querySelector(".collapsible").textContent.trim() === cat)
+    if (!section) return
+    const ul = section.querySelector("ul")
+    ul.innerHTML = ''
+    menu.filter(item => item.categoria === cat)
+        .forEach(item => {
+          const li = document.createElement('li')
+          li.innerHTML = `<span class="dish">${item.plato}</span> – ${item.descripcion || ''} ${item.precio ? `– €${item.precio}` : ''}`
+          ul.appendChild(li)
+        })
+  })
+}
+
+cargarCarta()
+
+// Collapsible
+document.querySelectorAll(".collapsible").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".collapsible").forEach(otherBtn => {
+      if (otherBtn !== btn) {
+        otherBtn.classList.remove("active")
+        otherBtn.nextElementSibling.style.display = "none"
+      }
+    })
+    btn.classList.toggle("active")
+    const content = btn.nextElementSibling
+    content.style.display = content.style.display === "block" ? "none" : "block"
+  })
+})
+</script>
+</body>
+</html>
