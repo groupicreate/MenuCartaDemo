@@ -5,49 +5,118 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin Restaurante Pepito</title>
 <link rel="stylesheet" href="css/styles.css">
+<style>
+  .admin-container { max-width: 600px; margin: 50px auto; }
+  label { display:block; margin-top:10px; }
+  input, select { width:100%; padding:5px; margin-top:5px; }
+  button { margin-top:10px; padding:10px; cursor:pointer; }
+  .menu-list { margin-top:20px; }
+  .menu-item { display:flex; justify-content:space-between; margin-bottom:5px; }
+</style>
 </head>
 <body>
 
-<div class="container">
-<header>
-  <h1>Panel de Administración</h1>
-  <div id="auth">
+<div class="admin-container">
+  <h1>Panel Admin</h1>
+  <div id="login-form">
     <input type="email" id="email" placeholder="Email">
-    <input type="password" id="password" placeholder="Contraseña">
+    <input type="password" id="password" placeholder="Password">
     <button id="loginBtn">Login</button>
-    <button id="logoutBtn" style="display:none;">Logout</button>
+    <p id="loginError" style="color:red"></p>
   </div>
-</header>
 
-<main>
-  <section class="menu-section" id="adminPanel" style="display:none;">
-    <button class="collapsible">Administrar Platos</button>
-    <div class="content">
-      <div id="formAdmin">
-        <input type="text" id="plato" placeholder="Plato">
-        <input type="text" id="descripcion" placeholder="Descripción">
-        <input type="number" id="precio" placeholder="Precio" min="0" step="0.01">
-        <select id="categoria">
-          <option value="Entrantes">Entrantes</option>
-          <option value="Primeros platos">Primeros platos</option>
-          <option value="Segundos platos">Segundos platos</option>
-          <option value="Postres">Postres</option>
-          <option value="Bebidas">Bebidas</option>
-        </select>
-        <button id="addBtn">Agregar Plato</button>
-      </div>
-      <ul id="platosAdmin"></ul>
-    </div>
-  </section>
-</main>
+  <div id="admin-panel" style="display:none;">
+    <h2>Tu menú</h2>
+    <div class="menu-list" id="menuList"></div>
+
+    <h3>Agregar plato</h3>
+    <label>Plato</label>
+    <input id="newPlato">
+    <label>Descripción</label>
+    <input id="newDesc">
+    <label>Precio</label>
+    <input id="newPrecio" type="number">
+    <label>Categoría</label>
+    <select id="newCat">
+      <option>Entrantes</option>
+      <option>Primeros platos</option>
+      <option>Segundos platos</option>
+      <option>Postres</option>
+      <option>Bebidas</option>
+    </select>
+    <button id="addBtn">Agregar</button>
+    <button id="logoutBtn">Logout</button>
+  </div>
 </div>
 
 <script type="module">
-// Aquí usamos todo el código admin que ya teníamos
-import { supabase, getMenu, login, logout, addPlato, updatePlato, deletePlato, getUser } from './js/supabase.js'
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+const supabaseUrl = 'https://qozzxdrjwjskmwmxscqj.supabase.co'
+const supabaseKey = 'sb_publishable_UtBfupVv8e2zniYdv1jvEA_SXIyWE0Z'
+const supabase = createClient(supabaseUrl, supabaseKey)
 
-// ... resto del código admin idéntico al que ya tenías
+let user = null
+
+// Login
+document.getElementById('loginBtn').onclick = async () => {
+  const email = document.getElementById('email').value
+  const password = document.getElementById('password').value
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+  if (error) { 
+    document.getElementById('loginError').textContent = error.message
+    return
+  }
+  user = data.user
+  document.getElementById('login-form').style.display = 'none'
+  document.getElementById('admin-panel').style.display = 'block'
+  cargarMenu()
+}
+
+// Logout
+document.getElementById('logoutBtn').onclick = async () => {
+  await supabase.auth.signOut()
+  user = null
+  document.getElementById('admin-panel').style.display = 'none'
+  document.getElementById('login-form').style.display = 'block'
+}
+
+// Cargar platos del usuario
+async function cargarMenu() {
+  const { data: menu, error } = await supabase
+    .from('Menu')
+    .select('*')
+    .eq('user_id', user.id)
+    .order('id')
+  const list = document.getElementById('menuList')
+  list.innerHTML = ''
+  menu.forEach(item => {
+    const div = document.createElement('div')
+    div.className = 'menu-item'
+    div.innerHTML = `
+      <span>${item.plato} – ${item.descripcion} – ${item.precio ? '€'+item.precio : ''}</span>
+      <button data-id="${item.id}">Borrar</button>
+    `
+    div.querySelector('button').onclick = async (e) => {
+      await supabase.from('Menu').delete().eq('id', item.id)
+      cargarMenu()
+    }
+    list.appendChild(div)
+  })
+}
+
+// Agregar plato
+document.getElementById('addBtn').onclick = async () => {
+  const plato = document.getElementById('newPlato').value
+  const desc = document.getElementById('newDesc').value
+  const precio = document.getElementById('newPrecio').value
+  const cat = document.getElementById('newCat').value
+  if (!plato) return alert('El plato es obligatorio')
+  await supabase.from('Menu').insert([{ plato, descripcion: desc, precio, categoria: cat, user_id: user.id }])
+  document.getElementById('newPlato').value = ''
+  document.getElementById('newDesc').value = ''
+  document.getElementById('newPrecio').value = ''
+  cargarMenu()
+}
 </script>
-
 </body>
 </html>
