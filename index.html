@@ -61,7 +61,13 @@ async function cargarCarta() {
     menu.filter(item => item.categoria?.trim().toLowerCase() === cat.toLowerCase())
         .forEach(item => {
           const li = document.createElement('li')
-          li.innerHTML = `<span class="dish">${item.plato}</span>${item.descripcion ? ' – ' + item.descripcion : ''}${item.precio ? ' – €' + item.precio : ''}`
+          li.innerHTML = `
+                        <div class="left">
+                            <span class="dish">${item.plato}</span>
+                            ${item.descripcion ? `<span class="descripcion">${item.descripcion}</span>` : ''}
+                        </div>
+                        ${item.precio ? `<span class="precio">€${item.precio}</span>` : ''}
+                        `
           ul.appendChild(li)
         })
   })

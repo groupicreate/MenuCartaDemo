@@ -162,3 +162,40 @@ footer {
   position: relative; 
   z-index: 1; 
 }
+
+/* ==== Estilos para mostrar plato, descripcion y precio ==== */
+
+.content li {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.content li .left {
+  display: flex;
+  flex-direction: column;
+  max-width: 70%; /* para que no choque con el precio */
+}
+
+.content li .dish {
+  font-weight: 600;
+  color: #1a1a1a;
+  font-size: 1.05em;
+  letter-spacing: 0.5px;
+}
+
+.content li .descripcion {
+  font-weight: 400;
+  font-size: 0.95em;
+  color: #555;
+  margin-top: 2px;
+}
+
+.content li .precio {
+  font-weight: 600;
+  font-size: 1em;
+  color: #333;
+  white-space: nowrap;
+  margin-left: 10px;
+}
