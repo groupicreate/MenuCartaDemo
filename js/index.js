@@ -7,6 +7,8 @@ const supabase = createClient(supabaseUrl, supabaseKey)
 const params = new URLSearchParams(window.location.search)
 const clienteId = params.get('cliente')
 
+console.log('Cliente ID:', clienteId)
+
 async function cargarCarta(clienteId) {
   const mainMenu = document.getElementById('mainMenu')
   
@@ -16,12 +18,17 @@ async function cargarCarta(clienteId) {
   }
 
   try {
+    console.log('Cargando categorías para usuario:', clienteId)
+    
     const { data: categorias, error: catError } = await supabase
       .from('Categorias')
       .select('*')
       .eq('user_id', clienteId)
       .eq('activa', true)
       .order('orden')
+
+    console.log('Categorías recibidas:', categorias)
+    console.log('Error categorías:', catError)
 
     if (catError) throw catError
 
@@ -31,6 +38,9 @@ async function cargarCarta(clienteId) {
       .eq('user_id', clienteId)
       .eq('activo', true)
       .order('orden')
+
+    console.log('Platos recibidos:', platos)
+    console.log('Error platos:', platosError)
 
     if (platosError) throw platosError
 
@@ -107,7 +117,7 @@ async function cargarCarta(clienteId) {
 
   } catch (error) {
     console.error('Error cargando carta:', error)
-    mainMenu.innerHTML = '<div class="empty-message">Error al cargar la carta. Por favor, intenta de nuevo más tarde.</div>'
+    mainMenu.innerHTML = `<div class="empty-message">Error al cargar la carta: ${error.message}</div>`
   }
 }
 
