@@ -137,26 +137,32 @@ function makeSortableCategorias(container) {
   container.querySelectorAll('.categoria-item').forEach(item => {
     const dragHandle = item.querySelector('.drag-handle')
     
-    // Hacer solo el handle arrastrable
-    dragHandle.draggable = true
+    // IMPORTANTE: Solo el handle es draggable, el item NO
     item.draggable = false
     
     // Eventos para desktop (mouse) - solo en el handle
+    dragHandle.onmousedown = (e) => {
+      dragHandle.draggable = true
+    }
+    
     dragHandle.ondragstart = (e) => {
       draggedElement = item
       item.classList.add('dragging')
       isDragging = true
+      e.dataTransfer.effectAllowed = 'move'
     }
     
     dragHandle.ondragend = () => {
       item.classList.remove('dragging')
       draggedElement = null
       isDragging = false
+      dragHandle.draggable = false
     }
     
     item.ondragover = (e) => {
       if (isDragging) {
         e.preventDefault()
+        e.dataTransfer.dropEffect = 'move'
       }
     }
     
@@ -180,6 +186,7 @@ function makeSortableCategorias(container) {
     
     // Eventos para móvil (touch) - solo en el handle
     dragHandle.ontouchstart = (e) => {
+      e.stopPropagation()
       draggedElement = item
       touchStartY = e.touches[0].clientY
       item.classList.add('dragging')
@@ -193,6 +200,7 @@ function makeSortableCategorias(container) {
     dragHandle.ontouchmove = (e) => {
       if (!isDragging) return
       e.preventDefault()
+      e.stopPropagation()
       const touch = e.touches[0]
       const currentY = touch.clientY
       
@@ -204,16 +212,22 @@ function makeSortableCategorias(container) {
       }
     }
     
-    dragHandle.ontouchend = async () => {
+    dragHandle.ontouchend = async (e) => {
       if (!isDragging) return
+      e.stopPropagation()
       item.classList.remove('dragging')
       if (placeholder && placeholder.parentNode) {
         placeholder.remove()
       }
+      await actualizarOrdenCategorias(container)
       draggedElement = null
       isDragging = false
-      await actualizarOrdenCategorias(container)
     }
+    
+    // Prevenir que otros elementos del item inicien drag
+    item.querySelectorAll('button, input, select').forEach(el => {
+      el.ondragstart = (e) => e.preventDefault()
+    })
   })
 }
 
@@ -394,11 +408,14 @@ function makeSortablePlatos() {
   document.querySelectorAll('.plato-item').forEach(item => {
     const dragHandle = item.querySelector('.drag-handle')
     
-    // Hacer solo el handle arrastrable
-    dragHandle.draggable = true
+    // IMPORTANTE: Solo el handle es draggable, el item NO
     item.draggable = false
     
     // Eventos para desktop (mouse) - solo en el handle
+    dragHandle.onmousedown = () => {
+      dragHandle.draggable = true
+    }
+    
     dragHandle.ondragstart = () => {
       draggedElement = item
       item.classList.add('dragging')
@@ -410,6 +427,7 @@ function makeSortablePlatos() {
       document.querySelectorAll('.plato-item').forEach(el => el.classList.remove('drag-over'))
       draggedElement = null
       isDragging = false
+      dragHandle.draggable = false
     }
     
     item.ondragover = (e) => {
@@ -451,6 +469,7 @@ function makeSortablePlatos() {
     
     // Eventos para móvil (touch) - solo en el handle
     dragHandle.ontouchstart = (e) => {
+      e.stopPropagation()
       draggedElement = item
       item.classList.add('dragging')
       isDragging = true
@@ -459,6 +478,7 @@ function makeSortablePlatos() {
     dragHandle.ontouchmove = (e) => {
       if (!isDragging) return
       e.preventDefault()
+      e.stopPropagation()
       const touch = e.touches[0]
       const currentY = touch.clientY
       
@@ -472,8 +492,9 @@ function makeSortablePlatos() {
       }
     }
     
-    dragHandle.ontouchend = async () => {
+    dragHandle.ontouchend = async (e) => {
       if (!isDragging) return
+      e.stopPropagation()
       item.classList.remove('dragging')
       document.querySelectorAll('.plato-item').forEach(el => el.classList.remove('drag-over'))
       const container = draggedElement.parentElement
@@ -481,6 +502,11 @@ function makeSortablePlatos() {
       draggedElement = null
       isDragging = false
     }
+    
+    // Prevenir que otros elementos del item inicien drag
+    item.querySelectorAll('button, input, select').forEach(el => {
+      el.ondragstart = (e) => e.preventDefault()
+    })
   })
 }
 
