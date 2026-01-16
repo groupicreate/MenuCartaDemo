@@ -130,10 +130,13 @@ async function cargarCategorias() {
 
 function makeSortableCategorias(container) {
   let draggedElement = null
+  let touchStartY = 0
+  let placeholder = null
 
   container.querySelectorAll('.categoria-item').forEach(item => {
     item.draggable = true
     
+    // Eventos para desktop (mouse)
     item.ondragstart = () => {
       draggedElement = item
       item.classList.add('dragging')
@@ -164,7 +167,55 @@ function makeSortableCategorias(container) {
         await actualizarOrdenCategorias(container)
       }
     }
+    
+    // Eventos para móvil (touch)
+    item.ontouchstart = (e) => {
+      draggedElement = item
+      touchStartY = e.touches[0].clientY
+      item.classList.add('dragging')
+      
+      placeholder = item.cloneNode(true)
+      placeholder.classList.add('placeholder')
+      placeholder.style.opacity = '0.5'
+    }
+    
+    item.ontouchmove = (e) => {
+      e.preventDefault()
+      const touch = e.touches[0]
+      const currentY = touch.clientY
+      
+      const afterElement = getDragAfterElement(container, currentY)
+      if (afterElement == null) {
+        container.appendChild(draggedElement)
+      } else {
+        container.insertBefore(draggedElement, afterElement)
+      }
+    }
+    
+    item.ontouchend = async () => {
+      item.classList.remove('dragging')
+      if (placeholder && placeholder.parentNode) {
+        placeholder.remove()
+      }
+      draggedElement = null
+      await actualizarOrdenCategorias(container)
+    }
   })
+}
+
+function getDragAfterElement(container, y) {
+  const draggableElements = [...container.querySelectorAll('.categoria-item:not(.dragging)')]
+  
+  return draggableElements.reduce((closest, child) => {
+    const box = child.getBoundingClientRect()
+    const offset = y - box.top - box.height / 2
+    
+    if (offset < 0 && offset > closest.offset) {
+      return { offset: offset, element: child }
+    } else {
+      return closest
+    }
+  }, { offset: Number.NEGATIVE_INFINITY }).element
 }
 
 async function actualizarOrdenCategorias(container) {
@@ -328,6 +379,7 @@ function makeSortablePlatos() {
   document.querySelectorAll('.plato-item').forEach(item => {
     item.draggable = true
     
+    // Eventos para desktop (mouse)
     item.ondragstart = () => {
       draggedElement = item
       item.classList.add('dragging')
@@ -373,7 +425,52 @@ function makeSortablePlatos() {
         }
       }
     }
+    
+    // Eventos para móvil (touch)
+    item.ontouchstart = (e) => {
+      draggedElement = item
+      item.classList.add('dragging')
+    }
+    
+    item.ontouchmove = (e) => {
+      e.preventDefault()
+      const touch = e.touches[0]
+      const currentY = touch.clientY
+      
+      const container = item.parentElement
+      const afterElement = getDragAfterElementPlatos(container, currentY, draggedElement.dataset.categoriaId)
+      
+      if (afterElement == null) {
+        container.appendChild(draggedElement)
+      } else {
+        container.insertBefore(draggedElement, afterElement)
+      }
+    }
+    
+    item.ontouchend = async () => {
+      item.classList.remove('dragging')
+      document.querySelectorAll('.plato-item').forEach(el => el.classList.remove('drag-over'))
+      const container = draggedElement.parentElement
+      await actualizarOrdenPlatos(container)
+      draggedElement = null
+    }
   })
+}
+
+function getDragAfterElementPlatos(container, y, categoriaId) {
+  const draggableElements = [...container.querySelectorAll('.plato-item:not(.dragging)')]
+    .filter(el => el.dataset.categoriaId === categoriaId)
+  
+  return draggableElements.reduce((closest, child) => {
+    const box = child.getBoundingClientRect()
+    const offset = y - box.top - box.height / 2
+    
+    if (offset < 0 && offset > closest.offset) {
+      return { offset: offset, element: child }
+    } else {
+      return closest
+    }
+  }, { offset: Number.NEGATIVE_INFINITY }).element
 }
 
 async function actualizarOrdenPlatos(container) {

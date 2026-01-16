@@ -483,3 +483,28 @@ h1 svg {
     grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
   }
 }
+
+/* Mejoras para dispositivos táctiles */
+.categoria-item, .plato-item {
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.categoria-item.dragging, .plato-item.dragging {
+  opacity: 0.5;
+}
+
+.placeholder {
+  background: #f0f0f0;
+  border: 2px dashed #ccc;
+}
+
+/* Hacer los drag handles más grandes en móvil */
+@media (max-width: 768px) {
+  .drag-handle {
+    font-size: 24px;
+    padding: 10px;
+    cursor: grab;
+  }
+}
