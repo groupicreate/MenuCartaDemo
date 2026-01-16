@@ -111,7 +111,7 @@ async function cargarCarta(clienteId) {
         
         btn.classList.toggle("active")
         const content = btn.nextElementSibling
-        content.style.display = content.style.display === "block" ? "none" : "block"
+        content.classList.toggle('show');
       })
     })
 
