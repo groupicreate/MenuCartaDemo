@@ -115,17 +115,42 @@ h1 svg {
   border-radius: 6px; 
   margin-bottom: 10px; 
   background: #1a1a1a; 
-  transition: all 0.2s; 
+  transition: all 0.2s;
+  /* Evitar que el item completo sea draggable */
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .categoria-item.inactiva { opacity: 0.5; background: #151515; }
-.categoria-item.dragging { opacity: 0.5; background: #2a2a1a; border-color: #ffff00; }
+
+/* Efecto visual mejorado al arrastrar */
+.categoria-item.dragging { 
+  opacity: 0.6; 
+  background: #2a2a1a; 
+  border: 2px solid #ffff00;
+  box-shadow: 0 5px 20px rgba(255,255,0,0.3);
+  transform: scale(1.02);
+}
 
 .drag-handle { 
-  cursor: move; 
+  cursor: grab; 
   font-size: 20px; 
   color: #666; 
-  user-select: none; 
+  user-select: none;
+  padding: 8px 12px;
+  transition: all 0.2s;
+  border-radius: 4px;
+  /* CRÍTICO: Solo el handle debe poder iniciar el drag */
+  touch-action: none;
+}
+
+.drag-handle:hover {
+  color: #ffff00;
+  background: rgba(255, 255, 0, 0.1);
+}
+
+.drag-handle:active {
+  cursor: grabbing;
 }
 
 .categoria-nombre { flex: 1; font-weight: 600; color: #e0e0e0; }
@@ -288,11 +313,23 @@ h1 svg {
   border-radius: 6px; 
   margin-bottom: 8px; 
   background: #1a1a1a; 
-  transition: all 0.2s; 
+  transition: all 0.2s;
+  /* Evitar que el item completo sea draggable */
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .plato-item.inactivo { opacity: 0.5; background: #151515; }
-.plato-item.dragging { opacity: 0.5; background: #2a2a1a; border-color: #ffff00; }
+
+/* Efecto visual mejorado al arrastrar */
+.plato-item.dragging { 
+  opacity: 0.6; 
+  background: #2a2a1a; 
+  border: 2px solid #ffff00;
+  box-shadow: 0 5px 20px rgba(255,255,0,0.3);
+  transform: scale(1.02);
+}
+
 .plato-item.drag-over { border-top: 3px solid #ffff00; }
 
 .plato-info { flex: 1; min-width: 200px; }
@@ -457,6 +494,17 @@ h1 svg {
     font-size: 12px;
     padding: 6px 10px;
   }
+
+  /* Hacer los drag handles más grandes y táctiles en móvil */
+  .drag-handle {
+    font-size: 28px;
+    padding: 12px 16px;
+    min-width: 50px;
+    min-height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 }
 
 @media (max-width: 480px) {
@@ -481,53 +529,5 @@ h1 svg {
 
   .alergenos-grid {
     grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
-  }
-}
-
-/* Mejoras para dispositivos táctiles */
-.categoria-item, .plato-item {
-  touch-action: pan-y;
-  user-select: none;
-  -webkit-user-select: none;
-}
-
-.drag-handle {
-  cursor: grab;
-  padding: 8px 12px;
-  color: #666;
-  font-size: 20px;
-  transition: all 0.2s;
-}
-
-.drag-handle:active {
-  cursor: grabbing;
-}
-
-.drag-handle:hover {
-  color: #333;
-  background: rgba(0,0,0,0.05);
-  border-radius: 4px;
-}
-
-.categoria-item.dragging, .plato-item.dragging {
-  opacity: 0.5;
-  background: #f0f0f0;
-}
-
-.placeholder {
-  background: #f0f0f0;
-  border: 2px dashed #ccc;
-}
-
-/* Hacer los drag handles más grandes y táctiles en móvil */
-@media (max-width: 768px) {
-  .drag-handle {
-    font-size: 28px;
-    padding: 12px 16px;
-    min-width: 50px;
-    min-height: 50px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
   }
 }
