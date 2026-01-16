@@ -36,7 +36,7 @@ body::before {
   top: 30px; 
   left: 30px; 
   right: 30px; 
-  height: calc(100% - 60px);
+  bottom: 30px;
   border: 2px solid #333; 
   pointer-events: none;
 }
@@ -47,7 +47,7 @@ body::before {
   top: 35px; 
   left: 35px; 
   right: 35px; 
-  height: calc(100% - 70px);
+  bottom: 35px;
   border: 1px solid #666; 
   pointer-events: none;
 }
