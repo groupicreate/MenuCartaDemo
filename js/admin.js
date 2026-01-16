@@ -132,26 +132,36 @@ function makeSortableCategorias(container) {
   let draggedElement = null
   let touchStartY = 0
   let placeholder = null
+  let isDragging = false
 
   container.querySelectorAll('.categoria-item').forEach(item => {
-    item.draggable = true
+    const dragHandle = item.querySelector('.drag-handle')
     
-    // Eventos para desktop (mouse)
-    item.ondragstart = () => {
+    // Hacer solo el handle arrastrable
+    dragHandle.draggable = true
+    item.draggable = false
+    
+    // Eventos para desktop (mouse) - solo en el handle
+    dragHandle.ondragstart = (e) => {
       draggedElement = item
       item.classList.add('dragging')
+      isDragging = true
     }
     
-    item.ondragend = () => {
+    dragHandle.ondragend = () => {
       item.classList.remove('dragging')
       draggedElement = null
+      isDragging = false
     }
     
     item.ondragover = (e) => {
-      e.preventDefault()
+      if (isDragging) {
+        e.preventDefault()
+      }
     }
     
     item.ondrop = async (e) => {
+      if (!isDragging) return
       e.preventDefault()
       if (draggedElement && draggedElement !== item) {
         const allItems = [...container.querySelectorAll('.categoria-item')]
@@ -168,18 +178,20 @@ function makeSortableCategorias(container) {
       }
     }
     
-    // Eventos para móvil (touch)
-    item.ontouchstart = (e) => {
+    // Eventos para móvil (touch) - solo en el handle
+    dragHandle.ontouchstart = (e) => {
       draggedElement = item
       touchStartY = e.touches[0].clientY
       item.classList.add('dragging')
+      isDragging = true
       
       placeholder = item.cloneNode(true)
       placeholder.classList.add('placeholder')
       placeholder.style.opacity = '0.5'
     }
     
-    item.ontouchmove = (e) => {
+    dragHandle.ontouchmove = (e) => {
+      if (!isDragging) return
       e.preventDefault()
       const touch = e.touches[0]
       const currentY = touch.clientY
@@ -192,12 +204,14 @@ function makeSortableCategorias(container) {
       }
     }
     
-    item.ontouchend = async () => {
+    dragHandle.ontouchend = async () => {
+      if (!isDragging) return
       item.classList.remove('dragging')
       if (placeholder && placeholder.parentNode) {
         placeholder.remove()
       }
       draggedElement = null
+      isDragging = false
       await actualizarOrdenCategorias(container)
     }
   })
@@ -375,23 +389,31 @@ async function cargarPlatos() {
 
 function makeSortablePlatos() {
   let draggedElement = null
+  let isDragging = false
 
   document.querySelectorAll('.plato-item').forEach(item => {
-    item.draggable = true
+    const dragHandle = item.querySelector('.drag-handle')
     
-    // Eventos para desktop (mouse)
-    item.ondragstart = () => {
+    // Hacer solo el handle arrastrable
+    dragHandle.draggable = true
+    item.draggable = false
+    
+    // Eventos para desktop (mouse) - solo en el handle
+    dragHandle.ondragstart = () => {
       draggedElement = item
       item.classList.add('dragging')
+      isDragging = true
     }
     
-    item.ondragend = () => {
+    dragHandle.ondragend = () => {
       item.classList.remove('dragging')
       document.querySelectorAll('.plato-item').forEach(el => el.classList.remove('drag-over'))
       draggedElement = null
+      isDragging = false
     }
     
     item.ondragover = (e) => {
+      if (!isDragging) return
       e.preventDefault()
       if (draggedElement && draggedElement !== item) {
         if (draggedElement.dataset.categoriaId === item.dataset.categoriaId) {
@@ -405,6 +427,7 @@ function makeSortablePlatos() {
     }
     
     item.ondrop = async (e) => {
+      if (!isDragging) return
       e.preventDefault()
       item.classList.remove('drag-over')
       
@@ -426,13 +449,15 @@ function makeSortablePlatos() {
       }
     }
     
-    // Eventos para móvil (touch)
-    item.ontouchstart = (e) => {
+    // Eventos para móvil (touch) - solo en el handle
+    dragHandle.ontouchstart = (e) => {
       draggedElement = item
       item.classList.add('dragging')
+      isDragging = true
     }
     
-    item.ontouchmove = (e) => {
+    dragHandle.ontouchmove = (e) => {
+      if (!isDragging) return
       e.preventDefault()
       const touch = e.touches[0]
       const currentY = touch.clientY
@@ -447,12 +472,14 @@ function makeSortablePlatos() {
       }
     }
     
-    item.ontouchend = async () => {
+    dragHandle.ontouchend = async () => {
+      if (!isDragging) return
       item.classList.remove('dragging')
       document.querySelectorAll('.plato-item').forEach(el => el.classList.remove('drag-over'))
       const container = draggedElement.parentElement
       await actualizarOrdenPlatos(container)
       draggedElement = null
+      isDragging = false
     }
   })
 }
