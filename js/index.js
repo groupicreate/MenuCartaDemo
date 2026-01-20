@@ -113,45 +113,6 @@ function baseUrl(path) {
   return new URL(path, document.baseURI).toString();
 }
 
-function parseWifiValue(raw) {
-  const s = (raw ?? "").toString().trim();
-  if (!s) return null;
-
-  // Soportamos formatos típicos:
-  // - "SSID | CLAVE"
-  // - "SSID;CLAVE"
-  // - "SSID: CLAVE"
-  // - "SSID,CLAVE"
-  // - "SSID\nCLAVE"
-  const candidates = [
-    { sep: "|", rx: /\s*\|\s*/ },
-    { sep: ";", rx: /\s*;\s*/ },
-    { sep: ",", rx: /\s*,\s*/ },
-    { sep: "\n", rx: /\s*\n\s*/ },
-    { sep: ":", rx: /\s*:\s*/ },
-    { sep: "/", rx: /\s*\/\s*/ },
-  ];
-
-  for (const c of candidates) {
-    if (c.sep === "\n" ? s.includes("\n") : s.includes(c.sep)) {
-      const parts = s
-        .split(c.rx)
-        .map((p) => p.trim())
-        .filter(Boolean);
-      if (parts.length >= 2) {
-        return {
-          ssid: parts[0],
-          pass: parts.slice(1).join(" "),
-          raw: s,
-        };
-      }
-    }
-  }
-
-  // Si no detectamos separador, lo tratamos como texto informativo.
-  return { ssid: null, pass: null, raw: s };
-}
-
 function normalizeAllergenKey(v) {
   const raw = (v || "").toString().trim().toLowerCase();
   if (!raw) return "";
@@ -871,8 +832,8 @@ function openInfoSheet() {
     mapFrame.removeAttribute("src");
   }
 
-  const wifiRaw = pick(PROFILE, ["wifi", "wifi_name", "perfilWifi"]);
-  const wifiObj = parseWifiValue(wifiRaw);
+  const wifiName = pick(PROFILE, ["wifi_name", "wifi", "wifi_ssid"]);
+  const wifiPass = pick(PROFILE, ["wifi_pass", "wifi_password", "wifiPass"]);
   const telefono = pick(PROFILE, ["telefono", "phone"]);
 
   infoRows.innerHTML = "";
@@ -912,34 +873,21 @@ function openInfoSheet() {
     return wrap;
   }
 
-  if (wifiObj) {
-    if (wifiObj.ssid && wifiObj.pass) {
-      // Mostramos el nombre de la red y un botón para copiar la clave (sin enseñarla)
-      infoRows.appendChild(
-        row("📶", "Wi‑Fi", wifiObj.ssid, "Copiar clave", async () => {
+  if (wifiName) {
+    const sub = wifiPass ? `${wifiName}` : `${wifiName}`;
+    infoRows.appendChild(
+      row(
+        "📶",
+        "Wi‑Fi",
+        sub,
+        wifiPass ? "Copiar clave" : "Copiar",
+        async () => {
           try {
-            await navigator.clipboard.writeText(String(wifiObj.pass));
+            await navigator.clipboard.writeText(String(wifiPass || wifiName));
           } catch {}
-        }),
-      );
-      // Fila extra para que se vea claro que la clave está disponible sin mostrarse
-      infoRows.appendChild(
-        row("🔑", "Clave Wi‑Fi", "••••••••", "Copiar", async () => {
-          try {
-            await navigator.clipboard.writeText(String(wifiObj.pass));
-          } catch {}
-        }),
-      );
-    } else {
-      // Modo antiguo: texto libre (por ejemplo "Pregunta en barra" o "SSID/clave")
-      infoRows.appendChild(
-        row("📶", "Wi‑Fi", wifiObj.raw, "Copiar", async () => {
-          try {
-            await navigator.clipboard.writeText(String(wifiObj.raw));
-          } catch {}
-        }),
-      );
-    }
+        },
+      ),
+    );
   }
 
   if (telefono) {

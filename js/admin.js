@@ -48,6 +48,7 @@ const perfilSlug = document.getElementById("perfilSlug");
 const perfilTelefono = document.getElementById("perfilTelefono");
 const perfilDireccion = document.getElementById("perfilDireccion");
 const perfilWifi = document.getElementById("perfilWifi");
+const perfilWifiPass = document.getElementById("perfilWifiPass");
 const perfilReviews = document.getElementById("perfilReviews");
 const perfilRating = document.getElementById("perfilRating");
 const perfilRatingCount = document.getElementById("perfilRatingCount");
@@ -225,7 +226,9 @@ async function cargarPerfil() {
     perfilSlug.value = safeText(data.slug);
     perfilTelefono.value = safeText(data.telefono);
     perfilDireccion.value = safeText(data.direccion);
-    perfilWifi.value = safeText(data.wifi);
+    // Wi‑Fi: nombre + clave (la clave se guarda pero no se mostrará en la carta)
+    perfilWifi.value = safeText(data.wifi_name ?? data.wifi);
+    if (perfilWifiPass) perfilWifiPass.value = safeText(data.wifi_pass);
     perfilReviews.value = safeText(data.reviews_url);
     perfilRating.value = data.rating ?? "";
     perfilRatingCount.value = data.rating_count ?? "";
@@ -268,7 +271,10 @@ document.getElementById("guardarPerfilBtn").onclick = async () => {
       slug: perfilSlug.value.trim() || null,
       telefono: perfilTelefono.value.trim() || null,
       direccion: perfilDireccion.value.trim() || null,
+      // Compatibilidad: mantenemos "wifi" como nombre (SSID)
       wifi: perfilWifi.value.trim() || null,
+      wifi_name: perfilWifi.value.trim() || null,
+      wifi_pass: perfilWifiPass?.value.trim() || null,
       reviews_url: perfilReviews.value.trim() || null,
       google_place_id: perfilGooglePlaceId.value.trim() || null,
       rating: perfilRating.value !== "" ? Number(perfilRating.value) : null,
@@ -286,15 +292,90 @@ document.getElementById("guardarPerfilBtn").onclick = async () => {
   }
 };
 
-// ========== PLACE ID FINDER (simple) ==========
-// El botón "Buscar Place ID" SOLO abre la herramienta oficial de Google.
-// No usamos Maps JS API ni modales aquí.
+// ========== PLACE ID FINDER (Google Places Autocomplete) ==========
+function openPlaceIdModal() {
+  if (!placeIdModal) return;
+  placeIdModal.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+  // reset
+  if (placeSearchInput) placeSearchInput.value = "";
+  if (placeResultName) placeResultName.textContent = "-";
+  if (placeResultAddr) placeResultAddr.textContent = "-";
+  if (placeResultId) placeResultId.textContent = "-";
+  setTimeout(() => placeSearchInput?.focus(), 50);
+
+  // Inicializa Autocomplete si no está ya
+  initPlaceAutocompleteOnce();
+}
+
+function closePlaceIdModal() {
+  if (!placeIdModal) return;
+  placeIdModal.setAttribute("aria-hidden", "true");
+  document.body.style.overflow = "";
+}
+
+let __placeAutocompleteInit = false;
+function initPlaceAutocompleteOnce() {
+  if (__placeAutocompleteInit) return;
+  if (!placeSearchInput) return;
+
+  // Espera a que cargue Google Maps JS
+  if (!window.google?.maps?.places) {
+    // Si no cargó, mostramos aviso en consola; la UI seguirá abierta
+    console.warn(
+      "Google Maps JS no está cargado. Revisa TU_API_KEY y libraries=places.",
+    );
+    return;
+  }
+
+  const ac = new google.maps.places.Autocomplete(placeSearchInput, {
+    fields: ["place_id", "name", "formatted_address"],
+    // Puedes limitar a España si quieres:
+    componentRestrictions: { country: "es" },
+  });
+
+  ac.addListener("place_changed", () => {
+    const p = ac.getPlace();
+    const pid = p?.place_id || "";
+    if (placeResultName) placeResultName.textContent = p?.name || "-";
+    if (placeResultAddr)
+      placeResultAddr.textContent = p?.formatted_address || "-";
+    if (placeResultId) placeResultId.textContent = pid || "-";
+  });
+
+  __placeAutocompleteInit = true;
+}
+
 buscarPlaceIdBtn?.addEventListener("click", () => {
   window.open(
     "https://developers.google.com/maps/documentation/javascript/examples/places-placeid-finder",
     "_blank",
     "noopener",
   );
+});
+// (El modal/autocomplete antiguo se mantiene en el archivo, pero ya no se usa)
+placeIdModalBackdrop?.addEventListener("click", closePlaceIdModal);
+placeIdModalClose?.addEventListener("click", closePlaceIdModal);
+document.addEventListener("keydown", (e) => {
+  if (
+    e.key === "Escape" &&
+    placeIdModal?.getAttribute("aria-hidden") === "false"
+  ) {
+    closePlaceIdModal();
+  }
+});
+
+usePlaceIdBtn?.addEventListener("click", async () => {
+  const pid = safeText(placeResultId?.textContent).trim();
+  if (!pid || pid === "-") return;
+  if (perfilGooglePlaceId) perfilGooglePlaceId.value = pid;
+
+  // Copiar al portapapeles (opcional)
+  try {
+    await navigator.clipboard.writeText(pid);
+  } catch {}
+
+  closePlaceIdModal();
 });
 
 // ========== ALERGENOS ==========

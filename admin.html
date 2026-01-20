@@ -175,16 +175,23 @@
                                 />
                             </div>
                             <div>
-                                <label>Wi-Fi</label>
+                                <label>Wi‑Fi (nombre)</label>
                                 <input
                                     id="perfilWifi"
-                                    placeholder="Ej: MiWifi | MiClave (o texto informativo)"
+                                    placeholder="Nombre de la red (SSID)"
+                                />
+                            </div>
+                            <div>
+                                <label>Wi‑Fi (clave)</label>
+                                <input
+                                    id="perfilWifiPass"
+                                    type="password"
+                                    placeholder="Clave (no se mostrará en la carta)"
+                                    autocomplete="new-password"
                                 />
                                 <small class="hint"
-                                    >Formato recomendado:
-                                    <b>NombreWiFi | ClaveWiFi</b>. Si no tienes
-                                    clave, escribe un texto (ej: "Pregunta en
-                                    barra").</small
+                                    >La clave no se muestra en la carta; solo se
+                                    puede copiar.</small
                                 >
                             </div>
                         </div>
