@@ -205,6 +205,26 @@ function getWriteReviewUrl(profile) {
   return `https://search.google.com/local/writereview?placeid=${encodeURIComponent(placeId)}`;
 }
 
+function getGoogleReviewsSearchUrl(profile) {
+  const placeId = pick(profile, [
+    "google_place_id",
+    "place_id",
+    "googlePlaceId",
+  ]);
+  if (!placeId) return null;
+
+  // Usa el nombre del local como query; si no existe, al menos ponemos "restaurante"
+  const q =
+    pick(profile, [
+      "nombre",
+      "name",
+      "restaurant_name",
+      "local_name",
+      "titulo",
+    ]) || "restaurante";
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}&query_place_id=${encodeURIComponent(placeId)}`;
+}
+
 function setView(which) {
   const home = which === "home";
   viewHome.classList.toggle("is-hidden", !home);
@@ -623,19 +643,28 @@ function applyProfileToHome() {
     cover.style.background = "linear-gradient(135deg, #d7d7dd, #f5f5f7)";
   }
 
-  // Rating (opcional)
+  // Reseñas / Rating (opcional)
+  // Mostramos el "botón de reseñas" si hay rating o si existe google_place_id (para abrir Google Maps).
   const rating = pick(PROFILE, ["rating", "valoracion", "stars"]);
   const ratingCount = pick(PROFILE, [
     "rating_count",
     "valoraciones",
     "reviews",
   ]);
-  if (rating != null) {
+  const googleReviewsUrl = getGoogleReviewsSearchUrl(PROFILE);
+
+  if (rating != null || googleReviewsUrl) {
     ratingBtn.style.display = "";
-    ratingPrimary.textContent = `${Number(rating).toFixed(1)} · Excelente`;
-    ratingSecondary.textContent = ratingCount
-      ? `${ratingCount} valoraciones`
-      : "";
+
+    // Texto del botón (home): el usuario quiere que ponga "Reseñas"
+    ratingPrimary.textContent = "Reseñas";
+    if (ratingCount) {
+      ratingSecondary.textContent = `${ratingCount} reseñas`;
+    } else if (rating != null) {
+      ratingSecondary.textContent = `${Number(rating).toFixed(1)} ★`;
+    } else {
+      ratingSecondary.textContent = "Ver en Google";
+    }
   }
 
   // Info (opcional)
@@ -881,7 +910,12 @@ function openInfoSheet() {
 // =============================
 backBtn.addEventListener("click", goHome);
 
-ratingBtn.addEventListener("click", openRatingsSheet);
+ratingBtn.addEventListener("click", () => {
+  const url = PROFILE ? getGoogleReviewsSearchUrl(PROFILE) : null;
+  if (url) return window.open(url, "_blank", "noopener");
+  // Fallback: si no hay Place ID, abrimos la hoja de rating local
+  openRatingsSheet();
+});
 infoBtn.addEventListener("click", openInfoSheet);
 
 homeSearchBtn.addEventListener("click", () => {
