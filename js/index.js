@@ -140,17 +140,39 @@ function openSheet(plato) {
   sheetPrice.textContent = plato.precio != null ? formatPrice(plato.precio) : ''
   sheetDesc.textContent = safeText(plato.descripcion)
 
-  // alérgenos (tu sistema actual: array + iconos locales /alergenos/*.svg)
+  // alérgenos: en GitHub Pages / hosting estático no tenemos garantizado un pack de SVGs.
+  // Para que no salgan iconos rotos, mostramos "chips" con texto (y opcionalmente emoji).
   const alergs = Array.isArray(plato.alergenos) ? plato.alergenos : []
   sheetAllergens.innerHTML = ''
   if (alergs.length) {
     sheetAllergenSection.style.display = ''
-    alergs.forEach(a => {
-      const img = document.createElement('img')
-      img.src = `alergenos/${a}.svg`
-      img.alt = a
-      img.title = a.replace(/_/g, ' ')
-      sheetAllergens.appendChild(img)
+
+    const EMOJI = {
+      'Cereales con gluten': '🌾',
+      'Gluten': '🌾',
+      'Huevos': '🥚',
+      'Lácteos': '🥛',
+      'Leche': '🥛',
+      'Pescado': '🐟',
+      'Crustáceos': '🦐',
+      'Moluscos': '🦪',
+      'Cacahuetes': '🥜',
+      'Frutos de cáscara': '🌰',
+      'Sésamo': '⚪',
+      'Soja': '🫘',
+      'Mostaza': '🌭',
+      'Apio': '🥬',
+      'Sulfitos': '🍷'
+    }
+
+    alergs.forEach(aRaw => {
+      const a = String(aRaw || '').trim()
+      if (!a) return
+      const chip = document.createElement('span')
+      chip.className = 'allergenChip'
+      const emoji = EMOJI[a] ? `${EMOJI[a]} ` : ''
+      chip.textContent = `${emoji}${a}`
+      sheetAllergens.appendChild(chip)
     })
   } else {
     sheetAllergenSection.style.display = 'none'
