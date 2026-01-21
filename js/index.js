@@ -583,14 +583,7 @@ function goHome() {
 // =============================
 async function loadProfileIfExists() {
   // Intentamos dos nombres para no romperte si ya has creado uno.
-  const candidates = [
-    "Perfil",
-    "Perfiles",
-    "Clientes",
-    "Bares",
-    "bars",
-    "clientes",
-  ];
+  const candidates = ["Perfil"]; // 👈 forzamos una única fuente de verdad
   for (const table of candidates) {
     try {
       const { data, error } = await supabase

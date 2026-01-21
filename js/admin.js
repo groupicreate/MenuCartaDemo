@@ -226,9 +226,11 @@ async function cargarPerfil() {
     perfilSlug.value = safeText(data.slug);
     perfilTelefono.value = safeText(data.telefono);
     perfilDireccion.value = safeText(data.direccion);
-    // Wi‑Fi: nombre + clave (la clave se guarda pero no se mostrará en la carta)
-    perfilWifi.value = safeText(data.wifi_name ?? data.wifi);
+
+    // Wi-Fi: SOLO nombre + clave (sin columna legacy "wifi")
+    perfilWifi.value = safeText(data.wifi_name);
     if (perfilWifiPass) perfilWifiPass.value = safeText(data.wifi_pass);
+
     perfilReviews.value = safeText(data.reviews_url);
     perfilRating.value = data.rating ?? "";
     perfilRatingCount.value = data.rating_count ?? "";
@@ -271,10 +273,11 @@ document.getElementById("guardarPerfilBtn").onclick = async () => {
       slug: perfilSlug.value.trim() || null,
       telefono: perfilTelefono.value.trim() || null,
       direccion: perfilDireccion.value.trim() || null,
-      // Compatibilidad: mantenemos "wifi" como nombre (SSID)
-      wifi: perfilWifi.value.trim() || null,
+
+      // Wi-Fi nuevo: SOLO wifi_name y wifi_pass
       wifi_name: perfilWifi.value.trim() || null,
       wifi_pass: perfilWifiPass?.value.trim() || null,
+
       reviews_url: perfilReviews.value.trim() || null,
       google_place_id: perfilGooglePlaceId.value.trim() || null,
       rating: perfilRating.value !== "" ? Number(perfilRating.value) : null,
@@ -321,7 +324,6 @@ function initPlaceAutocompleteOnce() {
 
   // Espera a que cargue Google Maps JS
   if (!window.google?.maps?.places) {
-    // Si no cargó, mostramos aviso en consola; la UI seguirá abierta
     console.warn(
       "Google Maps JS no está cargado. Revisa TU_API_KEY y libraries=places.",
     );
@@ -330,7 +332,6 @@ function initPlaceAutocompleteOnce() {
 
   const ac = new google.maps.places.Autocomplete(placeSearchInput, {
     fields: ["place_id", "name", "formatted_address"],
-    // Puedes limitar a España si quieres:
     componentRestrictions: { country: "es" },
   });
 
@@ -370,7 +371,6 @@ usePlaceIdBtn?.addEventListener("click", async () => {
   if (!pid || pid === "-") return;
   if (perfilGooglePlaceId) perfilGooglePlaceId.value = pid;
 
-  // Copiar al portapapeles (opcional)
   try {
     await navigator.clipboard.writeText(pid);
   } catch {}
