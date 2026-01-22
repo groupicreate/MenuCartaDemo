@@ -286,7 +286,10 @@ document.getElementById("guardarPerfilBtn").onclick = async () => {
       portada_url: portadaFinal || null,
     };
 
-    const { error } = await supabase.from("Perfil").upsert(payload);
+    const { error } = await supabase
+      .schema("iMenu")
+      .from("Perfil")
+      .upsert(payload);
     if (error) throw error;
 
     alert("Perfil guardado ✅");
@@ -525,7 +528,11 @@ guardarCategoriaBtn.onclick = async () => {
 
   const id = editCategoriaId.value;
   if (id) {
-    await supabase.from("Categorias").update({ nombre }).eq("id", id);
+    await supabase
+      .schema("iMenu")
+      .from("Categorias")
+      .update({ nombre })
+      .eq("id", id);
   } else {
     // orden al final
     const nextOrden = ALL_CATEGORIAS.length;
@@ -553,7 +560,7 @@ async function eliminarCategoria(id) {
     !confirm("¿Eliminar categoría? También se quedarán platos sin categoría.")
   )
     return;
-  await supabase.from("Categorias").delete().eq("id", id);
+  await supabase.schema("iMenu").from("Categorias").delete().eq("id", id);
   await cargarCategorias();
   await cargarPlatos();
 }
@@ -574,7 +581,11 @@ function makeSortableCategorias(container) {
       const items = [...container.querySelectorAll(".categoria-item")];
       for (let i = 0; i < items.length; i++) {
         const id = items[i].dataset.id;
-        await supabase.from("Categorias").update({ orden: i }).eq("id", id);
+        await supabase
+          .schema("iMenu")
+          .from("Categorias")
+          .update({ orden: i })
+          .eq("id", id);
       }
       await cargarCategorias();
     },
@@ -761,13 +772,17 @@ function editarPlato(id) {
 
 async function togglePlato(id) {
   const p = ALL_PLATOS.find((x) => String(x.id) === String(id));
-  await supabase.from("Menu").update({ activo: !p.activo }).eq("id", id);
+  await supabase
+    .schema("iMenu")
+    .from("Menu")
+    .update({ activo: !p.activo })
+    .eq("id", id);
   await cargarPlatos();
 }
 
 async function eliminarPlato(id) {
   if (!confirm("¿Eliminar plato?")) return;
-  await supabase.from("Menu").delete().eq("id", id);
+  await supabase.schema("iMenu").from("Menu").delete().eq("id", id);
   await cargarPlatos();
 }
 
@@ -799,7 +814,11 @@ function makeSortablePlatos(container) {
         if (!plato) continue;
 
         if (!catId || Number(plato.categoria_id) === catId) {
-          await supabase.from("Menu").update({ orden: i }).eq("id", id);
+          await supabase
+            .schema("iMenu")
+            .from("Menu")
+            .update({ orden: i })
+            .eq("id", id);
         }
       }
 
@@ -838,7 +857,7 @@ guardarPlatoBtn.onclick = async () => {
 
     const id = editPlatoId.value;
     const { error } = id
-      ? await supabase.from("Menu").update(payload).eq("id", id)
+      ? await supabase.schema("iMenu").from("Menu").update(payload).eq("id", id)
       : await supabase
           .from("Menu")
           .insert({ ...payload, activo: true, orden: 0 });
