@@ -7,6 +7,7 @@ const supabaseUrl = "https://qozzxdrjwjskmwmxscqj.supabase.co";
 const supabaseKey =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFvenp4ZHJqd2pza213bXhzY3FqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU5ODkyNjgsImV4cCI6MjA4MTU2NTI2OH0.3C_4cTXacx0Gf8eRtBYp2uaNZ61OE4SEEOUTDSW4P98";
 const supabase = createClient(supabaseUrl, supabaseKey);
+const db = supabase.schema("iMenu");
 
 const params = new URLSearchParams(window.location.search);
 // Compatibilidad:
@@ -586,7 +587,7 @@ async function loadProfileIfExists() {
   const candidates = ["Perfil"]; // 👈 forzamos una única fuente de verdad
   for (const table of candidates) {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from(table)
         .select("*")
         .eq("user_id", clienteId)
@@ -700,7 +701,7 @@ async function loadMenu() {
   } else {
     // Nuevo modo: slug en Perfil.slug
     const slug = String(clienteParam).trim();
-    const { data: perfilBySlug, error: slugErr } = await supabase
+    const { data: perfilBySlug, error: slugErr } = await db
       .from("Perfil")
       .select("user_id")
       .eq("slug", slug)
@@ -721,7 +722,7 @@ async function loadMenu() {
   applyProfileToHome();
 
   try {
-    const { data: categorias, error: catError } = await supabase
+    const { data: categorias, error: catError } = await db
       .from("Categorias")
       .select("*")
       .eq("user_id", clienteId)
@@ -730,7 +731,7 @@ async function loadMenu() {
 
     if (catError) throw catError;
 
-    const { data: platos, error: platosError } = await supabase
+    const { data: platos, error: platosError } = await db
       .from("Menu")
       .select("*")
       .eq("user_id", clienteId)
