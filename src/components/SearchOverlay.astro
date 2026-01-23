@@ -1,0 +1,33 @@
+<!-- BUSCADOR (overlay) -->
+<div class="searchOverlay" id="searchOverlay" aria-hidden="true">
+  <div
+    class="searchBox"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Buscar"
+  >
+    <div class="searchField">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path
+          d="M10 18a8 8 0 1 1 5.293-14.293A8 8 0 0 1 10 18zm11 3-5.2-5.2"
+        />
+      </svg>
+      <input
+        id="searchInput"
+        type="search"
+        placeholder="Buscar"
+        autocomplete="off"
+      />
+      <button class="iconBtn" id="clearSearch" type="button" aria-label="Borrar">
+        &#10005;
+      </button>
+    </div>
+    <button class="ghostBtn" id="closeSearch" type="button">Cerrar</button>
+  </div>
+  <button
+    class="overlayBackdrop"
+    type="button"
+    id="searchBackdrop"
+    aria-label="Cerrar"
+  ></button>
+</div>

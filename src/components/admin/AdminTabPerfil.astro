@@ -1,0 +1,113 @@
+<div id="tab-perfil" class="tab-content active">
+  <div class="form-box">
+    <h3>ðŸ·ï¸ Perfil del local</h3>
+    <div class="grid-2">
+      <div>
+        <label>Nombre</label>
+        <input id="perfilNombre" placeholder="Nombre del bar/restaurante" />
+      </div>
+      <div>
+        <label>Slug (para URL bonita)</label>
+        <input id="perfilSlug" placeholder="alpine-meadow" />
+        <small class="hint"
+          >Tu carta podrÃ¡ abrirse como: <b>?cliente=alpine-meadow</b></small
+        >
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div>
+        <label>TelÃ©fono</label>
+        <input id="perfilTelefono" placeholder="+34 ..." />
+      </div>
+      <div>
+        <label>Wiâ€‘Fi (nombre)</label>
+        <input id="perfilWifi" placeholder="Nombre de la red (SSID)" />
+      </div>
+      <div>
+        <label>Wiâ€‘Fi (clave)</label>
+        <input
+          id="perfilWifiPass"
+          type="text"
+          placeholder="Clave (no se mostrarÃ¡ en la carta)"
+          autocomplete="new-password"
+        />
+        <small class="hint"
+          >La clave no se muestra en la carta; solo se puede copiar.</small
+        >
+      </div>
+
+      <div>
+        <label>Wiâ€‘Fi (PIN para ver clave)</label>
+        <input
+          id="perfilWifiPin"
+          type="text"
+          inputmode="numeric"
+          autocomplete="new-password"
+          placeholder="PIN (4-8 dÃ­gitos)"
+        />
+        <small class="hint"
+          >Este PIN se usa en la carta para revelar la contraseÃ±a del Wiâ€‘Fi.
+          DÃ©jalo vacÃ­o si no quieres cambiarlo.</small
+        >
+      </div>
+    </div>
+
+    <label>DirecciÃ³n</label>
+    <input id="perfilDireccion" placeholder="Calle ..." />
+
+    <label>URL valoraciones (Google Reviews, etc.)</label>
+    <input id="perfilReviews" placeholder="https://..." />
+
+    <div class="grid-2" style="align-items: end">
+      <div>
+        <label>Google Place ID (para enlaces de reseÃ±as)</label>
+
+        <div style="display: flex; gap: 8px; align-items: center">
+          <input id="perfilGooglePlaceId" placeholder="ChIJ..." style="flex: 1" />
+          <button type="button" id="buscarPlaceIdBtn" class="secondaryBtn">
+            Buscar Place ID
+          </button>
+        </div>
+
+        <small class="hint">
+          Se usa para abrir Google Maps / escribir reseÃ±a automÃ¡ticamente.
+        </small>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div>
+        <label>Rating (opcional)</label>
+        <input id="perfilRating" type="number" step="0.1" placeholder="4.6" />
+      </div>
+      <div>
+        <label>NÂº valoraciones (opcional)</label>
+        <input
+          id="perfilRatingCount"
+          type="number"
+          step="1"
+          placeholder="46"
+        />
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div>
+        <label>Portada (URL)</label>
+        <input id="perfilPortadaUrl" placeholder="https://..." />
+      </div>
+      <div>
+        <label>Portada (subir imagen)</label>
+        <input id="perfilPortadaFile" type="file" accept="image/*" />
+        <small class="hint"
+          >Usa Storage (bucket) para subir sin tocar GitHub.</small
+        >
+      </div>
+    </div>
+
+    <div id="perfilPortadaPreview" class="image-preview" style="display: none"></div>
+
+    <button id="guardarPerfilBtn">Guardar Perfil</button>
+  </div>
+</div>

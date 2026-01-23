@@ -1,0 +1,58 @@
+<!-- MODAL: Buscar Place ID (Google) -->
+<div id="placeIdModal" class="imodal" aria-hidden="true">
+  <button
+    type="button"
+    class="imodal-backdrop"
+    id="placeIdModalBackdrop"
+    aria-label="Cerrar"
+  ></button>
+  <div class="imodal-card" role="dialog" aria-modal="true" aria-label="Buscar Place ID">
+    <div class="imodal-header">
+      <h3 style="margin: 0">ðŸ”Ž Buscar Place ID</h3>
+      <button type="button" class="imodal-close" id="placeIdModalClose" aria-label="Cerrar">
+        âœ•
+      </button>
+    </div>
+
+    <p class="hint" style="margin-top: 8px">
+      Escribe el nombre del local y selecciÃ³nalo. Te rellenarÃ¡ automÃ¡ticamente
+      <b>Google Place ID</b>.
+    </p>
+
+    <label>Buscar</label>
+    <input id="placeSearchInput" placeholder="Ej: Jabali Gastrobar, Herencia" />
+
+    <div class="grid-2" style="margin-top: 10px">
+      <div>
+        <label>Nombre</label>
+        <div id="placeResultName" class="muted">-</div>
+      </div>
+      <div>
+        <label>DirecciÃ³n</label>
+        <div id="placeResultAddr" class="muted">-</div>
+      </div>
+    </div>
+
+    <label style="margin-top: 12px">Place ID</label>
+    <div class="grid-2" style="align-items: center">
+      <code
+        id="placeResultId"
+        style="
+          display: block;
+          padding: 10px;
+          border-radius: 10px;
+          background: #111;
+          color: #fff;
+          overflow: auto;
+        "
+        >-</code
+      >
+      <button type="button" id="usePlaceIdBtn">Usar este Place ID</button>
+    </div>
+
+    <small class="hint">
+      Requiere una API key de Google Maps con <b>Places API</b> + <b>Maps JavaScript API</b>
+      activadas (y la key restringida a tu dominio).
+    </small>
+  </div>
+</div>

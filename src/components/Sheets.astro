@@ -1,0 +1,207 @@
+<!-- MODAL PLATO (bottom sheet) -->
+<div class="sheet" id="dishSheet" aria-hidden="true">
+  <button
+    class="sheetBackdrop"
+    type="button"
+    data-close="true"
+    aria-label="Cerrar"
+  ></button>
+  <div class="sheetCard" role="dialog" aria-modal="true" aria-label="Detalle">
+    <div class="sheetHandle" aria-hidden="true"></div>
+    <div class="sheetImage" id="sheetImageWrap" style="display: none">
+      <img id="sheetImage" alt="" />
+    </div>
+    <div class="sheetBody">
+      <div class="sheetTitle" id="sheetTitle"></div>
+      <div class="sheetPrice" id="sheetPrice"></div>
+      <div class="sheetDesc" id="sheetDesc"></div>
+      <div class="sheetSection" id="sheetAllergenSection" style="display: none">
+        <div class="sheetSectionTitle">Alergenos</div>
+        <div class="sheetAllergens" id="sheetAllergens"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL VALORACIONES (bottom sheet) -->
+<div class="sheet" id="ratingsSheet" aria-hidden="true">
+  <button
+    class="sheetBackdrop"
+    type="button"
+    data-close="true"
+    aria-label="Cerrar"
+  ></button>
+  <div
+    class="sheetCard"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Valoraciones"
+  >
+    <div class="sheetHandle" aria-hidden="true"></div>
+    <div class="sheetBody">
+      <div class="sheetHeader">
+        <div class="sheetHeaderTitle">Valoraciones</div>
+      </div>
+
+      <div class="ratingsTop">
+        <div class="ratingBig">
+          <div class="ratingValue" id="ratingsValue">-</div>
+          <div class="ratingStars" id="ratingsStars" aria-label="Estrellas"></div>
+          <div class="ratingCount" id="ratingsCount"></div>
+        </div>
+        <div class="ratingBars" id="ratingsBars"></div>
+      </div>
+
+      <div class="sheetActions">
+        <button
+          class="primaryBtn"
+          id="openReviewsBtn"
+          type="button"
+          style="display: none"
+        >
+          Escribir reseÃ±a en Google
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL INFO (bottom sheet) -->
+<div class="sheet" id="infoSheet" aria-hidden="true">
+  <button
+    class="sheetBackdrop"
+    type="button"
+    data-close="true"
+    aria-label="Cerrar"
+  ></button>
+  <div class="sheetCard" role="dialog" aria-modal="true" aria-label="Info">
+    <div class="sheetHandle" aria-hidden="true"></div>
+    <div class="sheetBody">
+      <div class="sheetHeader">
+        <div class="sheetHeaderTitle" id="infoTitle">Info</div>
+      </div>
+
+      <div class="mapWrap" id="mapWrap" style="display: none">
+        <iframe
+          id="mapFrame"
+          title="Mapa"
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+        ></iframe>
+      </div>
+
+      <div class="infoRows" id="infoRows"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ZOOM ALERGENO (overlay) -->
+<div class="zoomModal" id="allergenZoom" aria-hidden="true">
+  <button
+    class="zoomBackdrop"
+    id="allergenZoomBackdrop"
+    type="button"
+    aria-label="Cerrar"
+  ></button>
+  <div class="zoomCard" role="dialog" aria-modal="true" aria-label="AlÃ©rgeno">
+    <button class="zoomClose" id="allergenZoomClose" type="button" aria-label="Cerrar">
+      âœ•
+    </button>
+    <div class="zoomInner">
+      <img id="allergenZoomImg" alt="AlÃ©rgeno" />
+      <div class="zoomTitle" id="allergenZoomTitle"></div>
+    </div>
+  </div>
+</div>
+
+<!-- WIFI PIN (overlay) -->
+<div class="zoomModal" id="wifiPinModal" aria-hidden="true">
+  <button
+    class="zoomBackdrop"
+    id="wifiPinBackdrop"
+    type="button"
+    aria-label="Cerrar"
+  ></button>
+  <div class="zoomCard" role="dialog" aria-modal="true" aria-label="Wiâ€‘Fi">
+    <button class="zoomClose" id="wifiPinClose" type="button" aria-label="Cerrar">
+      âœ•
+    </button>
+    <div class="zoomInner" style="gap: 12px">
+      <div class="zoomTitle" style="margin-bottom: 4px">Wiâ€‘Fi</div>
+      <div id="wifiPinSsid" style="opacity: 0.9"></div>
+
+      <label
+        style="
+          width: 100%;
+          text-align: left;
+          font-size: 14px;
+          opacity: 0.9;
+        "
+      >
+        Introduce el PIN
+        <input
+          id="wifiPinInput"
+          type="password"
+          inputmode="numeric"
+          placeholder="PIN"
+          autocomplete="one-time-code"
+          style="
+            margin-top: 8px;
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            background: rgba(0, 0, 0, 0.25);
+            color: inherit;
+          "
+        />
+      </label>
+
+      <div
+        id="wifiPinError"
+        style="display: none; color: #ffb4b4; font-size: 13px"
+      ></div>
+
+      <div style="display: flex; gap: 10px; width: 100%">
+        <button
+          id="wifiPinSubmit"
+          type="button"
+          style="
+            flex: 1;
+            padding: 12px 14px;
+            border-radius: 14px;
+            border: 0;
+            cursor: pointer;
+          "
+        >
+          Ver clave
+        </button>
+        <button
+          id="wifiPinCopy"
+          type="button"
+          style="
+            flex: 1;
+            padding: 12px 14px;
+            border-radius: 14px;
+            border: 0;
+            cursor: pointer;
+            opacity: 0.85;
+          "
+        >
+          Copiar clave
+        </button>
+      </div>
+
+      <div
+        id="wifiPinResult"
+        style="
+          display: none;
+          width: 100%;
+          text-align: left;
+          font-size: 14px;
+          line-height: 1.35;
+        "
+      ></div>
+    </div>
+  </div>
+</div>

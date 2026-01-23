@@ -1,0 +1,54 @@
+<div id="tab-platos" class="tab-content">
+  <div class="form-box">
+    <h3 id="plato-form-title">âž• Nuevo Plato</h3>
+    <div class="edit-grid">
+      <aside id="platoEditAside" class="edit-aside" style="display: none">
+        <div class="edit-aside-title">Editando</div>
+        <div id="platoEditAsideBody" class="edit-aside-body"></div>
+      </aside>
+
+      <div class="edit-main">
+        <input type="hidden" id="editPlatoId" />
+        <input id="platoNombre" placeholder="Nombre del plato" />
+        <input id="platoDescripcion" placeholder="DescripciÃ³n" />
+        <input id="platoPrecio" type="number" step="0.01" placeholder="Precio (â‚¬)" />
+        <input id="platoSubcategoria" placeholder="SubcategorÃ­a (ej: Para picar)" />
+        <select id="platoCategoria"></select>
+
+        <div class="grid-2">
+          <div>
+            <label>Imagen (URL)</label>
+            <input id="platoImagenUrl" placeholder="https://..." />
+          </div>
+          <div>
+            <label>Imagen (subir)</label>
+            <input id="platoImagenFile" type="file" accept="image/*" />
+          </div>
+        </div>
+        <div id="platoImagenPreview" class="image-preview" style="display: none"></div>
+
+        <div class="alergenos-section">
+          <label>ðŸ”´ AlÃ©rgenos (haz clic para seleccionar):</label>
+          <div class="alergenos-grid" id="alergenosGrid"></div>
+        </div>
+
+        <button id="guardarPlatoBtn">Guardar</button>
+        <button class="cancel" id="cancelPlatoBtn" style="display: none">
+          Cancelar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toolbar (filtro + buscador) -->
+  <div class="platos-toolbar">
+    <label>
+      CategorÃ­a:
+      <select id="platosCategoriaFilter"></select>
+    </label>
+
+    <input id="platosSearch" type="search" placeholder="Buscar plato..." />
+  </div>
+
+  <div id="platosContainer"></div>
+</div>

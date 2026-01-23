@@ -733,3 +733,47 @@ h1 svg {
         opacity: 0.9;
     }
 }
+
+/* Modal Place ID (antes inline) */
+.imodal {
+    position: fixed;
+    inset: 0;
+    display: none;
+    z-index: 9999;
+}
+.imodal[aria-hidden="false"] {
+    display: block;
+}
+.imodal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    border: 0;
+}
+.imodal-card {
+    position: relative;
+    max-width: 760px;
+    margin: 7vh auto 0;
+    background: #fff;
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+}
+.imodal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+.imodal-close {
+    border: 0;
+    background: #f2f2f2;
+    border-radius: 10px;
+    padding: 8px 10px;
+    cursor: pointer;
+}
+@media (max-width: 820px) {
+    .imodal-card {
+        margin: 10vh 12px 0;
+    }
+}
