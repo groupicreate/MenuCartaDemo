@@ -584,7 +584,7 @@ function goHome() {
 // =============================
 async function loadProfileIfExists() {
   // Intentamos dos nombres para no romperte si ya has creado uno.
-  const candidates = ["Perfil"]; // 👈 forzamos una única fuente de verdad
+  const candidates = ["Perfil_publico"]; // 👈 fuente pública (sin wifi_pass)
   for (const table of candidates) {
     try {
       const { data, error } = await db
@@ -715,6 +715,8 @@ async function loadMenu() {
       return;
     }
     clienteId = perfilBySlug.user_id;
+    // (WiFi PIN) guardamos también en el contexto si ya existe
+    if (_wifiCtx) _wifiCtx.clienteId = clienteId;
   }
 
   // Perfil opcional
