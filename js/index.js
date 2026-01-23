@@ -1039,11 +1039,35 @@ async function fetchWifiPass() {
 
   showWifiError("");
 
-  // RPC pública: valida PIN y devuelve wifi_pass
-  const { data, error } = await supabase.rpc("imenu_get_wifi_by_user", {
-    p_user_id: clienteId,
-    p_pin: pin,
-  });
+  if (error) {
+    showPinError("Error al validar el PIN");
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    showPinError("PIN incorrecto");
+    return;
+  }
+
+  // ✅ AQUÍ ESTABA EL PROBLEMA
+  const wifi = data[0];
+
+  // Mostrar contraseña
+  wifiPasswordEl.textContent = wifi.wifi_pass;
+
+  // Activar botón copiar
+  copyWifiBtn.disabled = false;
+
+  // Copiar al portapapeles
+  copyWifiBtn.onclick = async () => {
+    try {
+      await navigator.clipboard.writeText(wifi.wifi_pass);
+      copyWifiBtn.textContent = "Copiado ✓";
+      setTimeout(() => (copyWifiBtn.textContent = "Copiar"), 1500);
+    } catch (e) {
+      alert("No se pudo copiar la contraseña");
+    }
+  };
 
   if (error) {
     showWifiError("No se pudo verificar el PIN. Inténtalo de nuevo.");
