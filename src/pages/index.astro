@@ -51,6 +51,12 @@ import "../styles/global.css";
                     <div class="homeBody">
                         <h1 class="placeTitle" id="placeTitle">Carta</h1>
 
+                        <div
+                            class="categoryButtons"
+                            id="homeCategories"
+                            aria-label="Categorias"
+                        ></div>
+
                         <div class="homeInfo" id="homeInfo">
                             <button
                                 class="rowBtn"
@@ -109,12 +115,6 @@ import "../styles/global.css";
                                 </div>
                             </button>
                         </div>
-
-                        <div
-                            class="categoryButtons"
-                            id="homeCategories"
-                            aria-label="Categorias"
-                        ></div>
                     </div>
                 </header>
             </section>
@@ -151,13 +151,15 @@ import "../styles/global.css";
                     </button>
                 </header>
 
-                <div class="chipsBar" aria-label="Subcategorias">
-                    <div class="chipsTrack" id="subcatChips"></div>
-                </div>
+                <div class="listWrap">
+                    <div class="chipsBar" aria-label="Subcategorias">
+                        <div class="chipsTrack" id="subcatChips"></div>
+                    </div>
 
-                <main class="list" id="dishList" aria-live="polite">
-                    <div class="loading">Cargando...</div>
-                </main>
+                    <main class="list" id="dishList" aria-live="polite">
+                        <div class="loading">Cargando...</div>
+                    </main>
+                </div>
             </section>
 
             <!-- BUSCADOR (overlay) -->
@@ -201,16 +203,6 @@ import "../styles/global.css";
                 ></button>
             </div>
 
-            <!-- CTA inferior -->
-            <button
-                class="floatingCta"
-                id="ctaBtn"
-                type="button"
-                style="display: none"
-            >
-                <span class="ctaIcon" aria-hidden="true">&#128172;</span>
-                <span>Valora tu experiencia</span>
-            </button>
         </div>
 
         <!-- MODAL PLATO (bottom sheet) -->

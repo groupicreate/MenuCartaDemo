@@ -368,7 +368,7 @@ function renderHome() {
 function buildChip(label, active) {
   const btn = document.createElement("button");
   btn.type = "button";
-  btn.className = `chip${active ? " chip--active" : ""}`;
+  btn.className = `chip${active ? " is-active" : ""}`;
   btn.textContent = label;
   return btn;
 }
@@ -677,7 +677,7 @@ function applyProfileToHome() {
     "google_reviews_url",
     "valoraciones_url",
   ]);
-  if (reviewsUrl) {
+  if (reviewsUrl && ctaBtn) {
     ctaBtn.style.display = "";
     ctaBtn.addEventListener("click", () =>
       window.open(reviewsUrl, "_blank", "noopener"),
