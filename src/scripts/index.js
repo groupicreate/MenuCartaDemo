@@ -91,6 +91,8 @@ let PLATOS = [];
 let ACTIVE_CAT_ID = null;
 let ACTIVE_SUBCAT = "all";
 let SEARCH_Q = "";
+let SEARCH_ACTIVE_CAT_ID = null;
+let SEARCH_ACTIVE_SUBCAT_KEY = null;
 
 // Perfil (opcional): si existe tabla "Perfiles" o "Perfil", la usamos.
 let PROFILE = null;
@@ -527,57 +529,123 @@ function renderSearchDropdown() {
     subMap.get(sc).push(p);
   });
 
-  CATEGORIAS.forEach((cat) => {
-    const subMap = byCat.get(String(cat.id));
+  const categories = CATEGORIAS.filter((cat) =>
+    byCat.has(String(cat.id)),
+  );
+
+  if (!categories.length) {
+    const empty = document.createElement("div");
+    empty.className = "searchEmpty";
+    empty.textContent = "Sin resultados.";
+    searchDropdown.appendChild(empty);
+    return;
+  }
+
+  const hasQuery = q.length > 0;
+
+  if (hasQuery) {
+    if (!SEARCH_ACTIVE_CAT_ID || !byCat.has(String(SEARCH_ACTIVE_CAT_ID))) {
+      SEARCH_ACTIVE_CAT_ID = String(categories[0].id);
+    }
+  } else if (
+    SEARCH_ACTIVE_CAT_ID &&
+    !byCat.has(String(SEARCH_ACTIVE_CAT_ID))
+  ) {
+    SEARCH_ACTIVE_CAT_ID = String(categories[0].id);
+  }
+
+  const activeSubMap = SEARCH_ACTIVE_CAT_ID
+    ? byCat.get(String(SEARCH_ACTIVE_CAT_ID))
+    : null;
+  if (activeSubMap && hasQuery) {
+    const activeSubKey = SEARCH_ACTIVE_SUBCAT_KEY || "";
+    const [activeCatId, activeSubLabel] = activeSubKey.split("::");
+    const activeMatches =
+      activeCatId === String(SEARCH_ACTIVE_CAT_ID) &&
+      activeSubMap.has(activeSubLabel);
+    if (!activeMatches) {
+      const firstSub = activeSubMap.keys().next().value;
+      SEARCH_ACTIVE_SUBCAT_KEY = `${SEARCH_ACTIVE_CAT_ID}::${firstSub}`;
+    }
+  }
+
+  categories.forEach((cat) => {
+    const catId = String(cat.id);
+    const subMap = byCat.get(catId);
     if (!subMap) return;
 
-    const group = document.createElement("div");
-    group.className = "searchGroup";
+    const catOpen = SEARCH_ACTIVE_CAT_ID === catId;
 
-    const title = document.createElement("div");
-    title.className = "searchGroupTitle";
-    title.textContent = safeText(cat.nombre);
-    group.appendChild(title);
+    const catWrap = document.createElement("div");
+    catWrap.className = `searchCat${catOpen ? " is-open" : ""}`;
+
+    const catToggle = document.createElement("button");
+    catToggle.type = "button";
+    catToggle.className = "searchCatToggle";
+    catToggle.setAttribute("aria-expanded", catOpen ? "true" : "false");
+    catToggle.addEventListener("click", () => {
+      if (SEARCH_ACTIVE_CAT_ID === catId) {
+        SEARCH_ACTIVE_CAT_ID = null;
+        SEARCH_ACTIVE_SUBCAT_KEY = null;
+      } else {
+        SEARCH_ACTIVE_CAT_ID = catId;
+        SEARCH_ACTIVE_SUBCAT_KEY = null;
+      }
+      renderSearchDropdown();
+    });
+
+    const catTitle = document.createElement("h1");
+    catTitle.className = "searchCatTitle";
+    catTitle.textContent = safeText(cat.nombre);
+    catToggle.appendChild(catTitle);
+    catWrap.appendChild(catToggle);
+
+    const catBody = document.createElement("div");
+    catBody.className = "searchCatBody";
+    if (!catOpen) catBody.style.display = "none";
 
     for (const [sc, items] of subMap.entries()) {
-      const sub = document.createElement("div");
-      sub.className = "searchSubGroup";
+      const subKey = `${catId}::${sc}`;
+      const subOpen = SEARCH_ACTIVE_SUBCAT_KEY === subKey && catOpen;
 
-      const subTitle = document.createElement("div");
-      subTitle.className = "searchSubTitle";
-      subTitle.textContent = sc;
-      sub.appendChild(subTitle);
+      const subWrap = document.createElement("div");
+      subWrap.className = "searchSubGroup";
 
-      const list = document.createElement("div");
-      list.className = "searchItems";
-
-      items.forEach((plato) => {
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.className = "searchItem";
-        btn.addEventListener("click", () => {
-          goToItemFromSearch(plato);
-        });
-
-        const name = document.createElement("div");
-        name.className = "searchItemName";
-        name.textContent = safeText(plato.plato);
-
-        const meta = document.createElement("div");
-        meta.className = "searchItemMeta";
-        const price = plato.precio != null ? formatPrice(plato.precio) : "";
-        meta.textContent = price || safeText(plato.descripcion || "");
-
-        btn.appendChild(name);
-        if (meta.textContent) btn.appendChild(meta);
-        list.appendChild(btn);
+      const subToggle = document.createElement("button");
+      subToggle.type = "button";
+      subToggle.className = "searchSubToggle";
+      subToggle.setAttribute("aria-expanded", subOpen ? "true" : "false");
+      subToggle.addEventListener("click", () => {
+        if (SEARCH_ACTIVE_SUBCAT_KEY === subKey) {
+          SEARCH_ACTIVE_SUBCAT_KEY = null;
+        } else {
+          SEARCH_ACTIVE_CAT_ID = catId;
+          SEARCH_ACTIVE_SUBCAT_KEY = subKey;
+        }
+        renderSearchDropdown();
       });
 
-      sub.appendChild(list);
-      group.appendChild(sub);
+      const subTitle = document.createElement("h2");
+      subTitle.className = "searchSubTitle";
+      subTitle.textContent = sc;
+      subToggle.appendChild(subTitle);
+      subWrap.appendChild(subToggle);
+
+      const list = document.createElement("div");
+      list.className = `searchItems${subOpen ? " is-open" : ""}`;
+      if (!subOpen) list.style.display = "none";
+
+      items.forEach((plato) => {
+        const row = buildSearchItemRow(plato);
+        list.appendChild(row);
+      });
+
+      subWrap.appendChild(list);
+      catBody.appendChild(subWrap);
     }
 
-    searchDropdown.appendChild(group);
+    catWrap.appendChild(catBody);
+    searchDropdown.appendChild(catWrap);
   });
 }
 
@@ -735,6 +803,84 @@ function buildDishRow(plato) {
     right.appendChild(img);
   } else {
     // si no hay imagen, oculta el hueco
+    right.style.display = "none";
+  }
+
+  btn.appendChild(left);
+  btn.appendChild(right);
+  return btn;
+}
+
+function buildSearchItemRow(plato) {
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "dishRow";
+  btn.addEventListener("click", () => goToItemFromSearch(plato));
+
+  const left = document.createElement("div");
+  left.className = "dishLeft";
+
+  const name = document.createElement("div");
+  name.className = "dishName";
+  name.textContent = safeText(plato.plato);
+
+  const desc = document.createElement("div");
+  desc.className = "dishDesc";
+  desc.textContent = safeText(plato.descripcion);
+
+  const price = document.createElement("div");
+  price.className = "dishPrice";
+  price.textContent = plato.precio != null ? formatPrice(plato.precio) : "";
+
+  const alergs = Array.isArray(plato.alergenos) ? plato.alergenos : [];
+  if (alergs.length) {
+    const badgeWrap = document.createElement("span");
+    badgeWrap.className = "miniBadges";
+    alergs.slice(0, 3).forEach((a) => {
+      const s = document.createElement("span");
+      s.className = "miniBadge";
+      const img = document.createElement("img");
+      img.className = "allergenIcon miniBadgeImg";
+      const key = normalizeAllergenKey(a);
+      if (!key) return;
+      img.alt = key.replace(/_/g, " ");
+      img.title = img.alt;
+      const url = allergenKeyToUrl(key);
+      if (url) img.src = url;
+      img.onerror = () => {
+        s.textContent = "â€¢";
+      };
+      s.appendChild(img);
+      badgeWrap.appendChild(s);
+    });
+    const titleLine = document.createElement("div");
+    titleLine.className = "dishTitleLine";
+    titleLine.appendChild(name);
+    titleLine.appendChild(badgeWrap);
+    left.appendChild(titleLine);
+  } else {
+    left.appendChild(name);
+  }
+
+  if (plato.descripcion) left.appendChild(desc);
+  if (plato.precio != null) left.appendChild(price);
+
+  const right = document.createElement("div");
+  right.className = "dishRight";
+
+  const imgUrl = pick(plato, [
+    "imagen_url",
+    "image_url",
+    "foto_url",
+    "img_url",
+  ]);
+  if (imgUrl) {
+    const img = document.createElement("img");
+    img.src = imgUrl;
+    img.alt = safeText(plato.plato);
+    img.loading = "lazy";
+    right.appendChild(img);
+  } else {
     right.style.display = "none";
   }
 
@@ -1136,6 +1282,7 @@ dishSheet.addEventListener("click", (e) => {
 });
 
 dishSheetHandle?.addEventListener("pointerdown", onDishSheetPointerDown);
+sheetImageWrap?.addEventListener("pointerdown", onDishSheetPointerDown);
 window.addEventListener("pointermove", onDishSheetPointerMove);
 window.addEventListener("pointerup", onDishSheetPointerUp);
 window.addEventListener("pointercancel", onDishSheetPointerUp);
