@@ -16,6 +16,38 @@ body {
     padding: 20px;
 }
 
+/* Clickables */
+button,
+.tab,
+.secondaryBtn,
+.cancel,
+.primaryBtn {
+    transition:
+        transform 0.12s ease,
+        box-shadow 0.12s ease,
+        background 0.12s ease,
+        color 0.12s ease,
+        opacity 0.12s ease;
+}
+@media (hover: hover) {
+    button:hover,
+    .tab:hover,
+    .secondaryBtn:hover,
+    .cancel:hover,
+    .primaryBtn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
+    }
+}
+button:active,
+.tab:active,
+.secondaryBtn:active,
+.cancel:active,
+.primaryBtn:active {
+    transform: translateY(0);
+    opacity: 0.9;
+}
+
 /* =============================
    Extras (Perfil / imágenes)
 ============================= */

@@ -79,6 +79,8 @@ const infoTitle = document.getElementById("infoTitle");
 const mapWrap = document.getElementById("mapWrap");
 const mapFrame = document.getElementById("mapFrame");
 const infoRows = document.getElementById("infoRows");
+const dishSheetCard = dishSheet?.querySelector(".sheetCard");
+const dishSheetHandle = dishSheet?.querySelector(".sheetHandle");
 
 // =============================
 // State
@@ -108,7 +110,7 @@ function normalize(str) {
 function formatPrice(v) {
   const n = Number(v);
   if (!Number.isFinite(n)) return "";
-  return `${n.toFixed(2)} â‚¬`;
+  return `${n.toFixed(2)} \u20AC`;
 }
 
 function baseUrl(path) {
@@ -229,10 +231,28 @@ function getGoogleReviewsSearchUrl(profile) {
 
 function setView(which) {
   const home = which === "home";
-  viewHome.classList.toggle("is-hidden", !home);
-  viewCategory.classList.toggle("is-active", !home);
-  viewHome.setAttribute("aria-hidden", home ? "false" : "true");
-  viewCategory.setAttribute("aria-hidden", home ? "true" : "false");
+  const show = home ? viewHome : viewCategory;
+  const hide = home ? viewCategory : viewHome;
+
+  if (show === viewHome) show.classList.remove("is-hidden");
+  else show.classList.add("is-active");
+  show.setAttribute("aria-hidden", "false");
+  hide.setAttribute("aria-hidden", "true");
+
+  show.classList.remove("is-fade-out");
+  show.classList.add("is-fade-in");
+  hide.classList.remove("is-fade-in");
+  hide.classList.add("is-fade-out");
+
+  setTimeout(() => {
+    hide.classList.remove("is-fade-out");
+    if (hide === viewHome) hide.classList.add("is-hidden");
+    else hide.classList.remove("is-active");
+  }, 180);
+
+  setTimeout(() => {
+    show.classList.remove("is-fade-in");
+  }, 180);
 }
 
 function openSearch() {
@@ -250,6 +270,7 @@ function closeSearchOverlay() {
 }
 
 function openSheet(plato) {
+  resetDishSheetDrag();
   const imgUrl = pick(plato, [
     "imagen_url",
     "image_url",
@@ -299,6 +320,53 @@ function openSheet(plato) {
   dishSheet.classList.add("is-open");
   dishSheet.setAttribute("aria-hidden", "false");
   document.body.style.overflow = "hidden";
+}
+
+// =============================
+// Dish sheet drag-to-close
+// =============================
+let sheetDragStartY = 0;
+let sheetDragOffsetY = 0;
+let sheetDragging = false;
+
+function setDishSheetDrag(y) {
+  if (!dishSheetCard) return;
+  dishSheetCard.style.transform = `translateX(-50%) translateY(${y}px)`;
+}
+
+function resetDishSheetDrag() {
+  if (!dishSheetCard) return;
+  dishSheetCard.style.transform = "";
+  dishSheetCard.classList.remove("is-dragging");
+}
+
+function onDishSheetPointerDown(e) {
+  if (!dishSheetCard || !dishSheet?.classList.contains("is-open")) return;
+  if (e.button != null && e.button !== 0) return;
+  sheetDragging = true;
+  sheetDragStartY = e.clientY;
+  sheetDragOffsetY = 0;
+  dishSheetCard.classList.add("is-dragging");
+  dishSheetCard.setPointerCapture?.(e.pointerId);
+}
+
+function onDishSheetPointerMove(e) {
+  if (!sheetDragging) return;
+  const dy = Math.max(0, e.clientY - sheetDragStartY);
+  sheetDragOffsetY = dy;
+  setDishSheetDrag(dy);
+}
+
+function onDishSheetPointerUp(e) {
+  if (!sheetDragging) return;
+  sheetDragging = false;
+  dishSheetCard?.releasePointerCapture?.(e.pointerId);
+  dishSheetCard?.classList.remove("is-dragging");
+  if (sheetDragOffsetY > 120) {
+    closeSheet();
+  } else {
+    resetDishSheetDrag();
+  }
 }
 
 // =============================
@@ -1066,6 +1134,11 @@ dishSheet.addEventListener("click", (e) => {
   const t = e.target;
   if (t?.dataset?.close === "true") closeSheet();
 });
+
+dishSheetHandle?.addEventListener("pointerdown", onDishSheetPointerDown);
+window.addEventListener("pointermove", onDishSheetPointerMove);
+window.addEventListener("pointerup", onDishSheetPointerUp);
+window.addEventListener("pointercancel", onDishSheetPointerUp);
 
 ratingsSheet.addEventListener("click", (e) => {
   const t = e.target;

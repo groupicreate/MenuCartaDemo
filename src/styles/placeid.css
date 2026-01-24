@@ -57,4 +57,15 @@ button {
     padding: 10px 14px;
     border-radius: 10px;
     cursor: pointer;
+    transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease, opacity 0.12s ease;
+}
+@media (hover:hover) {
+    button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
+    }
+}
+button:active {
+    transform: translateY(0);
+    opacity: 0.9;
 }

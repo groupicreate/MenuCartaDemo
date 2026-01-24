@@ -19,6 +19,52 @@ body{
   color:var(--text);
 }
 
+/* Clickables */
+button,
+.rowBtn,
+.catBtn,
+.chip,
+.dishRow,
+.searchItem,
+.infoRow,
+.infoRowBtn,
+.primaryBtn,
+.ghostBtn,
+.iconBtn,
+.pill{
+  transition:transform .12s ease, box-shadow .12s ease, background .12s ease, color .12s ease, opacity .12s ease;
+}
+@media (hover:hover){
+  button:hover,
+  .rowBtn:hover,
+  .catBtn:hover,
+  .chip:hover,
+  .dishRow:hover,
+  .searchItem:hover,
+  .infoRow:hover,
+  .primaryBtn:hover,
+  .ghostBtn:hover,
+  .iconBtn:hover,
+  .pill:hover{
+    transform:translateY(-1px);
+    box-shadow:0 8px 18px rgba(0,0,0,.08);
+  }
+}
+button:active,
+.rowBtn:active,
+.catBtn:active,
+.chip:active,
+.dishRow:active,
+.searchItem:active,
+.infoRow:active,
+.primaryBtn:active,
+.ghostBtn:active,
+.iconBtn:active,
+.pill:active{
+  transform:translateY(0);
+  opacity:.9;
+}
+
 /* App shell */
 .app{min-height:100vh; display:flex; justify-content:center; padding:14px 10px 24px;}
 .screen{width:min(430px, 100%);}
@@ -97,6 +143,13 @@ body{
 .screen--category{display:none}
 .screen--category.is-active{display:block}
 .screen--home.is-hidden{display:none}
+.screen{
+  opacity:1;
+  transform:translateY(0);
+  transition:opacity .18s ease, transform .18s ease;
+}
+.screen.is-fade-out{opacity:0; transform:translateY(6px)}
+.screen.is-fade-in{opacity:1; transform:translateY(0)}
 
 .topbar{
   width:min(430px, 100%);
@@ -297,7 +350,16 @@ body{
   border-radius:22px 22px 0 0;
   overflow:hidden;
 }
-.sheetHandle{width:52px; height:5px; border-radius:999px; background:#d7d7dc; margin:10px auto}
+.sheetHandle{
+  width:52px;
+  height:5px;
+  border-radius:999px;
+  background:#d7d7dc;
+  margin:10px auto;
+  cursor:grab;
+  touch-action:none;
+}
+.sheetCard.is-dragging{transition:none}
 .sheetImage{height:220px; background:#eee}
 .sheetImage img{width:100%; height:100%; object-fit:cover; display:block}
 .sheetBody{padding:16px 18px 22px}
