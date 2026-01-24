@@ -276,6 +276,10 @@ button:active,
   max-height:60vh;
   overflow:auto;
 }
+.searchResults{
+  display:flex;
+  flex-direction:column;
+}
 .searchSubGroup{
   padding:6px 8px 10px;
   border-top:1px solid var(--line);

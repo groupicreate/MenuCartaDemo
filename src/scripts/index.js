@@ -556,6 +556,19 @@ function renderSearchDropdown() {
     return;
   }
 
+  const hasQuery = q.length > 0;
+  if (hasQuery) {
+    SEARCH_ACTIVE_SUBCAT_KEY = null;
+    const list = document.createElement("div");
+    list.className = "searchResults";
+    filtered.forEach((plato) => {
+      const row = buildSearchItemRow(plato);
+      list.appendChild(row);
+    });
+    searchDropdown.appendChild(list);
+    return;
+  }
+
   const bySub = new Map();
   filtered.forEach((p) => {
     const sc = getSubcatLabel(p);
@@ -564,14 +577,8 @@ function renderSearchDropdown() {
   });
 
   const subcats = Array.from(bySub.keys());
-  const hasQuery = q.length > 0;
-
-  if (hasQuery) {
-    if (!SEARCH_ACTIVE_SUBCAT_KEY || !bySub.has(SEARCH_ACTIVE_SUBCAT_KEY)) {
-      SEARCH_ACTIVE_SUBCAT_KEY = subcats[0];
-    }
-  } else if (SEARCH_ACTIVE_SUBCAT_KEY && !bySub.has(SEARCH_ACTIVE_SUBCAT_KEY)) {
-    SEARCH_ACTIVE_SUBCAT_KEY = null;
+  if (!SEARCH_ACTIVE_SUBCAT_KEY || !bySub.has(SEARCH_ACTIVE_SUBCAT_KEY)) {
+    SEARCH_ACTIVE_SUBCAT_KEY = subcats[0];
   }
 
   subcats.forEach((sc) => {
