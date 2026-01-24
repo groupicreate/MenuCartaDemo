@@ -707,6 +707,12 @@ function renderDishList(catId) {
       items.forEach((p) => dishList.appendChild(buildDishRow(p)));
     }
   } else {
+    if (hasSubcats && ACTIVE_SUBCAT !== "all") {
+      const h = document.createElement("h2");
+      h.className = "groupTitle";
+      h.textContent = ACTIVE_SUBCAT;
+      dishList.appendChild(h);
+    }
     platosCat.forEach((p) => dishList.appendChild(buildDishRow(p)));
   }
 }
@@ -1195,7 +1201,7 @@ function openInfoSheet() {
   if (wifiName) {
     const sub = wifiPass ? `${wifiName}` : `${wifiName}`;
     infoRows.appendChild(
-      row("ðŸ“¶", "Wiâ€‘Fi", sub, "Ver clave", () => {
+      row("\uD83D\uDCF6", "Wi\u2011Fi", sub, "Ver clave", () => {
         openWifiPinModal({ wifiName, clienteId });
       }),
     );
@@ -1203,7 +1209,7 @@ function openInfoSheet() {
 
   if (telefono) {
     infoRows.appendChild(
-      row("ðŸ“ž", "TelÃ©fono", telefono, "Llamar", () => {
+      row("\uD83D\uDCDE", "Tel\u00E9fono", telefono, "Llamar", () => {
         window.location.href = `tel:${String(telefono).replace(/\s+/g, "")}`;
       }),
     );
@@ -1211,7 +1217,7 @@ function openInfoSheet() {
 
   if (direccion) {
     infoRows.appendChild(
-      row("ðŸ“", "DirecciÃ³n", direccion, "Abrir", () => {
+      row("\uD83D\uDCCD", "Direcci\u00F3n", direccion, "Abrir", () => {
         window.open(
           `https://www.google.com/maps?q=${encodeURIComponent(direccion)}`,
           "_blank",
