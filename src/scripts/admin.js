@@ -181,6 +181,12 @@ async function requireUser() {
     user = data.session.user;
     return user;
   }
+  // Intenta refrescar por si el token expiró.
+  const { data: refreshed } = await supabase.auth.refreshSession();
+  if (refreshed?.session?.user) {
+    user = refreshed.session.user;
+    return user;
+  }
   throw new Error("Sesión caducada. Inicia sesión de nuevo.");
 }
 
@@ -195,6 +201,9 @@ document.getElementById("loginBtn").onclick = async () => {
   if (error) {
     loginError.textContent = error.message;
     return;
+  }
+  if (data?.session) {
+    await supabase.auth.setSession(data.session);
   }
   user = data.user;
   loginForm.style.display = "none";
