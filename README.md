@@ -166,6 +166,41 @@ La carta pública **solo consulta esta vista**.
 
 ---
 
+## 🧩 Mantenimiento: reseñas y vista pública
+
+Si se quiere **eliminar el contador de reseñas** y reconstruir la vista pública:
+
+1) Quitar la columna de la tabla `iMenu.Perfil`:
+
+```sql
+alter table "iMenu"."Perfil" drop column if exists rating_count;
+```
+
+2) Recrear la vista pública sin esa columna:
+
+```sql
+create or replace view "iMenu"."Perfil_publico" as
+select
+  user_id,
+  nombre,
+  portada_url,
+  telefono,
+  direccion,
+  reviews_url,
+  slug,
+  google_place_id,
+  wifi_name
+from "iMenu"."Perfil";
+```
+
+3) Reaplicar permisos:
+
+```sql
+grant select on "iMenu"."Perfil_publico" to anon, authenticated;
+```
+
+---
+
 ## 🔐 Seguridad (RLS + Policies)
 
 ### Categorias
@@ -272,4 +307,3 @@ Dame siempre SQL exacto, cambios en JS y explicación clara.
 - Seguridad correcta
 - Escalable
 - Listo para producción y crecimiento
-
