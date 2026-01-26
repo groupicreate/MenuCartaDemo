@@ -193,6 +193,14 @@ function safeText(v) {
   return (v ?? "").toString();
 }
 
+function attachImageFallback(img, onFail) {
+  if (!img) return;
+  img.onerror = () => {
+    img.removeAttribute("src");
+    if (typeof onFail === "function") onFail();
+  };
+}
+
 function pick(obj, keys) {
   for (const k of keys) {
     if (obj && obj[k] != null && obj[k] !== "") return obj[k];
@@ -300,6 +308,9 @@ function openSheet(plato) {
     sheetImageWrap.style.display = "";
     sheetImage.src = imgUrl;
     sheetImage.alt = plato.plato ? `${plato.plato}` : "";
+    attachImageFallback(sheetImage, () => {
+      sheetImageWrap.style.display = "none";
+    });
   } else {
     sheetImageWrap.style.display = "none";
     sheetImage.removeAttribute("src");
@@ -788,6 +799,9 @@ function buildDishRow(plato) {
     img.src = imgUrl;
     img.alt = safeText(plato.plato);
     img.loading = "lazy";
+    attachImageFallback(img, () => {
+      right.style.display = "none";
+    });
     right.appendChild(img);
   } else {
     // si no hay imagen, oculta el hueco
@@ -867,6 +881,9 @@ function buildSearchItemRow(plato) {
     img.src = imgUrl;
     img.alt = safeText(plato.plato);
     img.loading = "lazy";
+    attachImageFallback(img, () => {
+      right.style.display = "none";
+    });
     right.appendChild(img);
   } else {
     right.style.display = "none";
