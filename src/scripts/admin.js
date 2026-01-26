@@ -164,6 +164,9 @@ function categoriaNombreById(id) {
 
 async function uploadToStorage(file, folder) {
   if (!file) return null;
+  if (!(file instanceof File)) {
+    throw new Error("El archivo no es un File válido");
+  }
   const currentUser = await requireUser();
   const baseFolder = folder ? `${currentUser.id}/${folder}` : currentUser.id;
   const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
