@@ -157,8 +157,10 @@ function categoriaNombreById(id) {
 
 async function uploadToStorage(file, folder) {
   if (!file) return null;
+  const currentUser = await requireUser();
+  const baseFolder = folder ? `${currentUser.id}/${folder}` : currentUser.id;
   const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
-  const path = `${folder}/${crypto.randomUUID()}.${ext}`;
+  const path = `${baseFolder}/${crypto.randomUUID()}.${ext}`;
 
   const { error: upErr } = await supabase.storage
     .from(STORAGE_BUCKET)
@@ -170,6 +172,16 @@ async function uploadToStorage(file, folder) {
 
   const { data } = supabase.storage.from(STORAGE_BUCKET).getPublicUrl(path);
   return data?.publicUrl || null;
+}
+
+async function requireUser() {
+  if (user?.id) return user;
+  const { data } = await supabase.auth.getSession();
+  if (data?.session?.user) {
+    user = data.session.user;
+    return user;
+  }
+  throw new Error("Sesión caducada. Inicia sesión de nuevo.");
 }
 
 // ========== LOGIN ==========
@@ -279,17 +291,18 @@ perfilPortadaFile?.addEventListener("change", () => {
 
 document.getElementById("guardarPerfilBtn").onclick = async () => {
   try {
+    const currentUser = await requireUser();
     let portadaFinal = perfilPortadaUrl.value.trim();
     const f = perfilPortadaFile.files?.[0];
     if (f) {
-      portadaFinal = await uploadToStorage(f, `${user.id}/portadas`);
+      portadaFinal = await uploadToStorage(f, "portadas");
       perfilPortadaUrl.value = portadaFinal;
       perfilPortadaFile.value = "";
       showPreview(perfilPortadaPreview, portadaFinal);
     }
 
     const payload = {
-      user_id: user.id,
+      user_id: currentUser.id,
       nombre: perfilNombre.value.trim() || null,
       slug: perfilSlug.value.trim() || null,
       telefono: perfilTelefono.value.trim() || null,
@@ -844,10 +857,11 @@ guardarPlatoBtn.onclick = async () => {
   if (!catId) return alert("Selecciona una categoría");
 
   try {
+    const currentUser = await requireUser();
     let imgFinal = platoImagenUrl.value.trim();
     const f = platoImagenFile.files?.[0];
     if (f) {
-      imgFinal = await uploadToStorage(f, `${user.id}/platos`);
+      imgFinal = await uploadToStorage(f, "platos");
       platoImagenUrl.value = imgFinal;
       platoImagenFile.value = "";
       showPreview(platoImagenPreview, imgFinal);
@@ -861,7 +875,7 @@ guardarPlatoBtn.onclick = async () => {
       subcategoria: platoSubcategoria.value.trim() || null,
       imagen_url: imgFinal || null,
       alergenos: alergenosSeleccionados,
-      user_id: user.id,
+      user_id: currentUser.id,
     };
 
     const id = editPlatoId.value;
