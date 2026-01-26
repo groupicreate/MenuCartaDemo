@@ -201,6 +201,77 @@ grant select on "iMenu"."Perfil_publico" to anon, authenticated;
 
 ---
 
+## 🧰 Storage (Subida de imágenes)
+
+Para que la subida de imágenes funcione en el bucket `imenu`, primero se deben otorgar permisos básicos:
+
+```sql
+grant usage on schema storage to authenticated;
+grant all on table storage.objects to authenticated;
+grant all on table storage.buckets to authenticated;
+```
+
+Luego, crea las policies seguras (solo permite subir/editar/borrar en la carpeta del usuario):
+
+```sql
+create policy "imenu_user_insert"
+on storage.objects
+for insert
+to authenticated
+with check (
+  bucket_id = 'imenu'
+  and name like auth.uid() || '/%'
+);
+
+create policy "imenu_user_update"
+on storage.objects
+for update
+to authenticated
+using (
+  bucket_id = 'imenu'
+  and name like auth.uid() || '/%'
+)
+with check (
+  bucket_id = 'imenu'
+  and name like auth.uid() || '/%'
+);
+
+create policy "imenu_user_delete"
+on storage.objects
+for delete
+to authenticated
+using (
+  bucket_id = 'imenu'
+  and name like auth.uid() || '/%'
+);
+```
+
+### 🧪 Modo temporal (debug)
+
+Si las policies estrictas fallan y necesitas desbloquear la subida **temporalmente**, puedes usar una policy abierta para `authenticated`:
+
+```sql
+grant usage on schema storage to authenticated;
+grant all on table storage.objects to authenticated;
+grant all on table storage.buckets to authenticated;
+
+drop policy if exists "imenu_user_insert" on storage.objects;
+drop policy if exists "imenu_user_update" on storage.objects;
+drop policy if exists "imenu_user_delete" on storage.objects;
+drop policy if exists "imenu_user_insert_debug" on storage.objects;
+
+create policy "imenu_allow_all_authenticated"
+on storage.objects
+for all
+to authenticated
+using (true)
+with check (true);
+```
+
+> ⚠️ Este modo **no es seguro** a largo plazo porque cualquier usuario autenticado puede modificar archivos del bucket. Úsalo solo para desbloquear y luego vuelve a la policy estricta.
+
+---
+
 ## 🔐 Seguridad (RLS + Policies)
 
 ### Categorias
