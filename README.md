@@ -1,260 +1,275 @@
-🍽️ iMenu — Carta Digital Inteligente para Restaurantes
+# 🍽️ iMenu
 
-iMenu es una plataforma de carta digital estilo NordQR, pensada como SaaS, que permite a bares y restaurantes gestionar su carta de forma visual, moderna y accesible mediante QR, sin necesidad de apps ni instalaciones.
+Carta digital para bares y restaurantes, con **panel de administración**, **vista pública** y **backend seguro en Supabase**.
 
-El sistema está dividido en:
+Este README es la **fuente de verdad del proyecto**: explica cómo funciona todo (frontend, base de datos, seguridad, RLS, vistas y RPCs) para que cualquiera pueda continuar el desarrollo sin romper nada.
 
-Vista pública (la carta del restaurante)
+---
 
-Panel de administración (para el dueño del local)
+## 🚀 Visión general
 
-Todo funciona con frontend estático + Supabase como backend (BBDD, auth y storage).
+iMenu permite a un bar/restaurante:
 
-🌐 Arquitectura general
-Frontend (HTML/CSS/JS)
-│
-├── GitHub Pages / Hosting propio
-│
-└── Supabase
-    ├── Auth (usuarios)
-    ├── PostgreSQL (datos)
-    └── Storage (imágenes)
+- Mostrar su carta online mediante URL / QR
+- Gestionar categorías y platos desde un panel privado
+- Mostrar información del local (dirección, teléfono, reseñas)
+- Compartir el WiFi **protegido por PIN**
 
-Tecnologías usadas
+Arquitectura:
 
-HTML, CSS, JavaScript (vanilla)
+```
+Cliente (móvil)
+   │
+   │  index.html / index.js (vista pública)
+   ▼
+Supabase (API)
+   │
+   ├─ Auth
+   ├─ PostgreSQL (schema iMenu)
+   ├─ RLS + Policies
+   ├─ Vistas públicas
+   └─ RPCs seguros
+   ▲
+   │  admin.html / admin.js (panel privado)
+   │
+Dueño del local
+```
 
-Supabase (Auth + Database + Storage)
+---
 
-GitHub Pages / Hosting estático
+## 📂 Frontend
 
-SVGs para alérgenos
+### 🌍 Vista pública (Carta)
 
-SortableJS (ordenar categorías y platos en móvil y PC)
+**Archivos**:
+- `index.html`
+- `index.js`
 
-👤 Gestión de usuarios (registro y login)
-Registro de usuarios
+Funcionalidad:
+- Carga carta por `slug` (`?cliente=icreate`)
+- Muestra portada, nombre, info y reseñas
+- Lista categorías y platos activos
+- Muestra nombre del WiFi
+- Solicita PIN para revelar la contraseña
 
-Actualmente el flujo es:
+Características:
+- ❌ No requiere login
+- 🔐 Nunca accede a datos sensibles directamente
+- 📖 Solo lectura
 
-El usuario (dueño del bar) se crea en Supabase Auth
+---
 
-Email + contraseña
+### 🔐 Panel de administración
 
-Al iniciar sesión en el admin, se asocia automáticamente a:
+**Archivos**:
+- `admin.html`
+- `admin.js`
 
-Su Perfil
+Funcionalidad:
+- Login con Supabase Auth
+- Edición del perfil del local
+- Configuración de WiFi y PIN
+- CRUD de categorías
+- CRUD de platos
+- Ordenación
 
-Sus Categorías
+Características:
+- 🔑 Requiere sesión (`authenticated`)
+- 👤 Solo gestiona sus propios datos
 
-Sus Platos
+---
 
-El sistema está preparado para evolucionar a multi-bar por usuario en el futuro.
+## 🗄️ Base de datos (Supabase)
 
-Login
+### 📦 Schema
 
-El login se hace desde admin.html
+Todo el proyecto vive en un schema dedicado:
 
-Se usa supabase.auth.signInWithPassword
+```
+iMenu
+```
 
-No se necesita ?cliente= en el admin
+Se conceden permisos explícitos:
 
-🧩 Estructura de base de datos
-Tabla Perfil
+```sql
+grant usage on schema "iMenu" to anon, authenticated;
+```
 
-Información del restaurante:
+---
 
-Campo	Descripción
-user_id	UUID del dueño (auth.users)
-nombre	Nombre del local
-slug	Identificador para la URL pública
-portada_url	Imagen de portada
-telefono	Teléfono
-direccion	Dirección
-wifi	Información Wi-Fi
-reviews_url	Enlace a Google Reviews
-rating	Valoración media
-rating_count	Nº de valoraciones
-Tabla Categorias
+## 📄 Tablas
 
-Categorías de la carta:
+### 🧑‍🍳 iMenu.Perfil
 
-Campo	Descripción
-id	ID
-nombre	Nombre
-orden	Orden visual
-activa	Visible u oculta
-user_id	Dueño
-Tabla Menu
+Datos del local.
 
-Platos del restaurante:
+Campos clave:
+- `user_id` (owner)
+- `nombre`
+- `slug`
+- `wifi_name`
+- `wifi_pass` ❗ privado
+- `wifi_pin_hash` ❗ privado
 
-Campo	Descripción
-id	ID
-plato	Nombre
-descripcion	Descripción
-precio	Precio
-categoria_id	Relación con Categorias
-subcategoria	Subcategoría (chips)
-imagen_url	Imagen del plato
-alergenos	Array de keys (["gluten","huevos"])
-orden	Orden
-activo	Visible u oculto
-user_id	Dueño
-🖼️ Imágenes y alérgenos
-Imágenes
+🔒 **Nunca se expone directamente al público**.
 
-Se suben a Supabase Storage
+---
 
-Bucket recomendado: imenu
+### 📂 iMenu.Categorias
 
-Se guarda la URL pública en la BD
+- `id`
+- `nombre`
+- `orden`
+- `activa`
+- `user_id`
 
-No se suben imágenes al repositorio
+---
 
-Alérgenos
+### 🍽️ iMenu.Menu
 
-Se guardan como keys normalizadas:
+- `id`
+- `nombre`
+- `descripcion`
+- `precio`
+- `categoria_id`
+- `orden`
+- `activo`
+- `user_id`
 
-["gluten","huevos","frutos_secos"]
+---
 
+## 👀 Vista pública
 
-Los SVG están en /alergenos/*.svg
+### iMenu.Perfil_publico
 
-En la carta:
+Vista SQL que expone **solo datos seguros** del perfil:
 
-Se muestran como iconos
+Incluye:
+- nombre
+- portada
+- teléfono
+- dirección
+- rating
+- wifi_name
 
-Al hacer click → zoom del alérgeno
+❌ Excluye:
+- wifi_pass
+- wifi_pin_hash
 
-📖 Vista pública (Carta)
+Permisos:
 
-URL de ejemplo:
+```sql
+grant select on "iMenu"."Perfil_publico" to anon, authenticated;
+```
 
-https://tudominio.com/?cliente=alpine-demo
+La carta pública **solo consulta esta vista**.
 
-Flujo de la carta
+---
 
-Se resuelve el slug → user_id
+## 🔐 Seguridad (RLS + Policies)
 
-Se cargan:
+### Categorias
 
-Perfil (portada, info, rating)
+```sql
+alter table "iMenu"."Categorias" enable row level security;
+```
 
-Categorías activas
+- `anon`: SELECT solo si `activa = true`
+- `authenticated`: SELECT / INSERT / UPDATE / DELETE solo si `user_id = auth.uid()`
 
-Platos activos
+---
 
-UI estilo NordQR:
+### Menu
 
-Portada
+```sql
+alter table "iMenu"."Menu" enable row level security;
+```
 
-Categorías como botones
+- `anon`: SELECT solo si `activo = true`
+- `authenticated`: CRUD solo del owner
 
-Subcategorías como chips
+---
 
-Platos con imagen lateral
+### Perfil
 
-Modal tipo bottom-sheet
+```sql
+alter table "iMenu"."Perfil" enable row level security;
+```
 
-Secciones interactivas
+- ❌ Sin SELECT público
+- ✅ Owner puede hacer ALL
 
-Info → abre sheet con mapa, wifi, teléfono y dirección
+---
 
-Valoraciones → abre sheet con rating y enlace externo
+## 🔑 WiFi con PIN
 
-Plato → abre sheet con imagen, descripción y alérgenos
+### Objetivo
 
-🛠️ Panel de administración (admin.html)
+Mostrar la contraseña del WiFi **solo a quien tenga el PIN**.
 
-Acceso:
+### Flujo
 
-/admin.html
-``️
+1. Admin define WiFi y PIN
+2. El PIN se guarda hasheado (`pgcrypto`)
+3. La carta solicita el PIN
+4. Un RPC valida el PIN
+5. Si es correcto → devuelve `wifi_pass`
 
-Funcionalidades del admin
-Perfil
+---
 
-Editar nombre, slug y portada
+## 🔧 RPCs
 
-Datos de contacto
+### Guardar PIN (admin)
 
-Valoraciones
+```sql
+public.imenu_set_wifi_pin(p_pin text)
+```
 
-Subida de imagen a Storage
+- Guarda hash del PIN
+- Solo `authenticated`
 
-Categorías
+---
 
-Crear / editar / eliminar
+### Validar PIN (público)
 
-Mostrar u ocultar
+```sql
+public.imenu_get_wifi_by_user(p_user_id uuid, p_pin text)
+```
 
-Ordenar con drag & drop (móvil y PC)
+- Público
+- Devuelve WiFi solo si el PIN es correcto
 
-Platos
+---
 
-Crear / editar / eliminar
+## 🧠 Prompt maestro (continuar desarrollo)
 
-Asignar categoría y subcategoría
+```
+Estás ayudándome a desarrollar iMenu, una carta digital tipo SaaS.
 
-Seleccionar alérgenos (SVG)
+Arquitectura:
+- Frontend: HTML/CSS/JS estático
+- Backend: Supabase
+- Schema: iMenu
+- Tablas: Perfil, Categorias, Menu
+- Vista: Perfil_publico
+- Seguridad: RLS + policies estrictas
+- WiFi protegido por PIN hasheado (pgcrypto)
+- RPCs: imenu_set_wifi_pin, imenu_get_wifi_by_user
 
-Subir imagen
+Requisitos:
+- No romper RLS
+- No exponer datos sensibles
+- Mantener separación vista pública / admin
 
-Mostrar u ocultar
+Dame siempre SQL exacto, cambios en JS y explicación clara.
+```
 
-Ordenar con drag & drop
+---
 
-Filtro por categoría
+## ✅ Estado del proyecto
 
-Buscador
+- Sistema estable
+- Seguridad correcta
+- Escalable
+- Listo para producción y crecimiento
 
-Badge visual de categoría
-
-Panel lateral “Editando” para contexto
-
-📱 Compatibilidad móvil
-
-100% responsive
-
-Drag & drop funcional en:
-
-Desktop
-
-Android
-
-iOS
-
-UI optimizada para uso real en restaurantes
-
-🔐 Seguridad (RLS)
-
-Lectura pública solo de datos activos
-
-Escritura solo para el usuario autenticado
-
-Cada restaurante solo puede modificar sus datos
-
-🚀 Posibles evoluciones futuras
-
-Multi-idioma
-
-Multi-bar por usuario
-
-Duplicar platos
-
-Horarios / platos agotados
-
-Integración pedidos
-
-Estadísticas de visitas
-
-Modo camarero / modo cocina
-
-📌 Estado del proyecto
-
-✔ MVP funcional
-✔ UX tipo NordQR
-✔ Preparado para SaaS
-✔ Escalable
-✔ Sin dependencias pesadas

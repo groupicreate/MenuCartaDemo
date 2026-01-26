@@ -22,7 +22,7 @@ function isUuid(v) {
   );
 }
 
-let clienteId = null; // siempre serÃ¡ UUID al final
+let clienteId = null; // siempre será UUID al final
 
 // =============================
 // DOM
@@ -170,9 +170,9 @@ function renderStars(container, value) {
   for (let i = 0; i < 5; i++) {
     const span = document.createElement("span");
     span.className = "star";
-    if (i < full) span.textContent = "â˜…";
-    else if (i == full && half) span.textContent = "â˜…";
-    else span.textContent = "â˜†";
+    if (i < full) span.textContent = "★";
+    else if (i == full && half) span.textContent = "★";
+    else span.textContent = "☆";
     container.appendChild(span);
   }
 }
@@ -422,7 +422,7 @@ function openAllergenZoom(src, title) {
   if (!allergenZoom) return;
   pushHistoryState({ modal: "allergen" });
   allergenZoomImg.src = src;
-  allergenZoomTitle.textContent = title || "AlÃ©rgeno";
+  allergenZoomTitle.textContent = title || "Alérgeno";
   allergenZoom.classList.add("is-open");
   allergenZoom.setAttribute("aria-hidden", "false");
 }
@@ -459,7 +459,7 @@ function renderHome() {
   if (!catsWithItems.length) {
     const p = document.createElement("p");
     p.className = "muted";
-    p.textContent = "Esta carta aÃºn no tiene categorÃ­as con platos.";
+    p.textContent = "Esta carta aún no tiene categorías con platos.";
     homeCategories.appendChild(p);
     return;
   }
@@ -660,7 +660,7 @@ function passesSearch(plato) {
 
 function renderDishList(catId) {
   const cat = CATEGORIAS.find((c) => String(c.id) === String(catId));
-  categoryTitle.textContent = cat ? cat.nombre : "CategorÃ­a";
+  categoryTitle.textContent = cat ? cat.nombre : "Categoría";
 
   dishList.innerHTML = "";
 
@@ -679,12 +679,12 @@ function renderDishList(catId) {
     empty.className = "empty";
     empty.textContent = SEARCH_Q
       ? "No hay resultados."
-      : "No hay platos en esta secciÃ³n.";
+      : "No hay platos en esta sección.";
     dishList.appendChild(empty);
     return;
   }
 
-  // Si existen subcategorÃ­as, pintamos separadores por grupo (como NordQR)
+  // Si existen subcategorías, pintamos separadores por grupo (como NordQR)
   const hasSubcats = PLATOS.some(
     (p) =>
       String(p.categoria_id) === String(catId) &&
@@ -740,7 +740,7 @@ function buildDishRow(plato) {
   price.className = "dishPrice";
   price.textContent = plato.precio != null ? formatPrice(plato.precio) : "";
 
-  // iconitos alÃ©rgenos (tipo NordQR: justo al lado del nombre)
+  // iconitos alérgenos (tipo NordQR: justo al lado del nombre)
   const alergs = Array.isArray(plato.alergenos) ? plato.alergenos : [];
   if (alergs.length) {
     const badgeWrap = document.createElement("span");
@@ -757,7 +757,7 @@ function buildDishRow(plato) {
       const url = allergenKeyToUrl(key);
       if (url) img.src = url;
       img.onerror = () => {
-        s.textContent = "â€¢";
+        s.textContent = "•";
       };
       s.appendChild(img);
       badgeWrap.appendChild(s);
@@ -836,7 +836,7 @@ function buildSearchItemRow(plato) {
       const url = allergenKeyToUrl(key);
       if (url) img.src = url;
       img.onerror = () => {
-        s.textContent = "â€¢";
+        s.textContent = "•";
       };
       s.appendChild(img);
       badgeWrap.appendChild(s);
@@ -910,7 +910,7 @@ function goHome() {
 // =============================
 async function loadProfileIfExists() {
   // Intentamos dos nombres para no romperte si ya has creado uno.
-  const candidates = ["Perfil_publico"]; // ðŸ‘ˆ fuente pÃºblica (sin wifi_pass)
+  const candidates = ["Perfil_publico"]; // 👈 fuente pública (sin wifi_pass)
   for (const table of candidates) {
     try {
       const { data, error } = await db
@@ -963,8 +963,8 @@ function applyProfileToHome() {
     cover.style.background = "linear-gradient(135deg, #d7d7dd, #f5f5f7)";
   }
 
-  // ReseÃ±as / Rating (opcional)
-  // Mostramos el "botÃ³n de reseÃ±as" si hay rating o si existe google_place_id (para abrir Google Maps).
+  // Reseñas / Rating (opcional)
+  // Mostramos el "botón de reseñas" si hay rating o si existe google_place_id (para abrir Google Maps).
   const rating = pick(PROFILE, ["rating", "valoracion", "stars"]);
   const ratingCount = pick(PROFILE, [
     "rating_count",
@@ -976,12 +976,12 @@ function applyProfileToHome() {
   if (rating != null || googleReviewsUrl) {
     ratingBtn.style.display = "";
 
-    // Texto del botÃ³n (home)
+    // Texto del botón (home)
     ratingPrimary.textContent = "Rese\u00F1as";
     if (ratingCount) {
-      ratingSecondary.textContent = `${ratingCount} reseÃ±as`;
+      ratingSecondary.textContent = `${ratingCount} reseñas`;
     } else if (rating != null) {
-      ratingSecondary.textContent = `${Number(rating).toFixed(1)} â˜…`;
+      ratingSecondary.textContent = `${Number(rating).toFixed(1)} ★`;
     } else {
       ratingSecondary.textContent = "Ver en Google";
     }
@@ -1012,12 +1012,12 @@ function applyProfileToHome() {
 }
 
 async function loadMenu() {
-  dishList.innerHTML = '<div class="loading">Cargandoâ€¦</div>';
+  dishList.innerHTML = '<div class="loading">Cargando…</div>';
 
   if (!clienteParam) {
-    placeTitle.textContent = "URL invÃ¡lida";
+    placeTitle.textContent = "URL inválida";
     homeCategories.innerHTML =
-      '<p class="muted">Falta el parÃ¡metro <b>?cliente=</b> (UUID o slug) o <b>?bar=</b>.</p>';
+      '<p class="muted">Falta el parámetro <b>?cliente=</b> (UUID o slug) o <b>?bar=</b>.</p>';
     return;
   }
 
@@ -1041,7 +1041,7 @@ async function loadMenu() {
       return;
     }
     clienteId = perfilBySlug.user_id;
-    // (WiFi PIN) guardamos tambiÃ©n en el contexto si ya existe
+    // (WiFi PIN) guardamos también en el contexto si ya existe
     if (_wifiCtx) _wifiCtx.clienteId = clienteId;
   }
 
@@ -1126,7 +1126,7 @@ function openRatingsSheet() {
   if (finalReviewsUrl) {
     openReviewsBtn.style.display = "";
     openReviewsBtn.textContent = writeReviewUrl
-      ? "Escribir reseÃ±a en Google"
+      ? "Escribir reseña en Google"
       : "Ver en Google";
     openReviewsBtn.onclick = () =>
       window.open(finalReviewsUrl, "_blank", "noopener");
@@ -1304,7 +1304,7 @@ document.addEventListener("keydown", (e) => {
 loadMenu();
 
 // =============================
-// Wiâ€‘Fi PIN modal (revelar clave)
+// Wi‑Fi PIN modal (revelar clave)
 // =============================
 const wifiPinModal = document.getElementById("wifiPinModal");
 const wifiPinBackdrop = document.getElementById("wifiPinBackdrop");
@@ -1374,28 +1374,28 @@ async function fetchWifiPass() {
     return;
   }
 
-  // âœ… AQUÃ ESTABA EL PROBLEMA
+  // ✅ AQUÍ ESTABA EL PROBLEMA
   const wifi = data[0];
 
-  // Mostrar contraseÃ±a
+  // Mostrar contraseña
   wifiPasswordEl.textContent = wifi.wifi_pass;
 
-  // Activar botÃ³n copiar
+  // Activar botón copiar
   copyWifiBtn.disabled = false;
 
   // Copiar al portapapeles
   copyWifiBtn.onclick = async () => {
     try {
       await navigator.clipboard.writeText(wifi.wifi_pass);
-      copyWifiBtn.textContent = "Copiado âœ“";
+      copyWifiBtn.textContent = "Copiado ✓";
       setTimeout(() => (copyWifiBtn.textContent = "Copiar"), 1500);
     } catch (e) {
-      alert("No se pudo copiar la contraseÃ±a");
+      alert("No se pudo copiar la contraseña");
     }
   };
 
   if (error) {
-    showWifiError("No se pudo verificar el PIN. IntÃ©ntalo de nuevo.");
+    showWifiError("No se pudo verificar el PIN. Inténtalo de nuevo.");
     return null;
   }
 

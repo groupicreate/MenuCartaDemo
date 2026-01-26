@@ -1,6 +1,6 @@
 <div id="tab-platos" class="tab-content">
   <div class="form-box">
-    <h3 id="plato-form-title">âž• Nuevo Plato</h3>
+    <h3 id="plato-form-title">➕ Nuevo Plato</h3>
     <div class="edit-grid">
       <aside id="platoEditAside" class="edit-aside" style="display: none">
         <div class="edit-aside-title">Editando</div>
@@ -10,9 +10,9 @@
       <div class="edit-main">
         <input type="hidden" id="editPlatoId" />
         <input id="platoNombre" placeholder="Nombre del plato" />
-        <input id="platoDescripcion" placeholder="DescripciÃ³n" />
-        <input id="platoPrecio" type="number" step="0.01" placeholder="Precio (â‚¬)" />
-        <input id="platoSubcategoria" placeholder="SubcategorÃ­a (ej: Para picar)" />
+        <input id="platoDescripcion" placeholder="Descripción" />
+        <input id="platoPrecio" type="number" step="0.01" placeholder="Precio (€)" />
+        <input id="platoSubcategoria" placeholder="Subcategoría (ej: Para picar)" />
         <select id="platoCategoria"></select>
 
         <div class="grid-2">
@@ -28,7 +28,7 @@
         <div id="platoImagenPreview" class="image-preview" style="display: none"></div>
 
         <div class="alergenos-section">
-          <label>ðŸ”´ AlÃ©rgenos (haz clic para seleccionar):</label>
+          <label>🔴 Alérgenos (haz clic para seleccionar):</label>
           <div class="alergenos-grid" id="alergenosGrid"></div>
         </div>
 
@@ -43,7 +43,7 @@
   <!-- Toolbar (filtro + buscador) -->
   <div class="platos-toolbar">
     <label>
-      CategorÃ­a:
+      Categoría:
       <select id="platosCategoriaFilter"></select>
     </label>
 
