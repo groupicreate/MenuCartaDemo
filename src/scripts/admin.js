@@ -337,12 +337,13 @@ document.getElementById("guardarPerfilBtn").onclick = async () => {
 
       // Wi-Fi nuevo: SOLO wifi_name y wifi_pass
       wifi_name: perfilWifi.value.trim() || null,
-      wifi_pass: perfilWifiPass?.value.trim() || null,
 
       reviews_url: perfilReviews.value.trim() || null,
       google_place_id: perfilGooglePlaceId.value.trim() || null,
       portada_url: portadaFinal || null,
     };
+    const wifiPassValue = perfilWifiPass?.value.trim();
+    if (wifiPassValue) payload.wifi_pass = wifiPassValue;
 
     const { data: existing, error: existsErr } = await db
       .from("Perfil")
@@ -369,6 +370,7 @@ document.getElementById("guardarPerfilBtn").onclick = async () => {
       } catch {}
     }
 
+    await cargarPerfil();
     alert("Perfil guardado ✅");
   } catch (e) {
     alert(e.message);
