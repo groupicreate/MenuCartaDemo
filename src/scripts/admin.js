@@ -117,6 +117,24 @@ function slugify(input) {
     .replace(/(^-|-$)/g, "");
 }
 
+const BASE_HREF = (() => {
+  const envBase =
+    typeof import.meta !== "undefined" && import.meta.env
+      ? import.meta.env.BASE_URL
+      : null;
+  if (envBase) return envBase.endsWith("/") ? envBase : `${envBase}/`;
+  const baseTag = document.querySelector("base");
+  const href = baseTag?.getAttribute("href");
+  if (href) return href.endsWith("/") ? href : `${href}/`;
+  return "/";
+})();
+
+function assetUrl(path) {
+  const clean = String(path || "").replace(/^\//, "");
+  const base = new URL(BASE_HREF, window.location.origin);
+  return new URL(clean, base).toString();
+}
+
 function showPreview(el, url) {
   if (!el) return;
   if (!url) {
@@ -471,8 +489,9 @@ function cargarAlergenosGrid() {
     div.dataset.alergeno = a;
     if (alergenosSeleccionados.includes(a)) div.classList.add("selected");
 
+    const imgSrc = assetUrl(`alergenos/${a}.svg`);
     div.innerHTML = `
-      <img src="alergenos/${a}.svg" alt="${a}" onerror="this.style.display='none'">
+      <img src="${imgSrc}" alt="${a}" onerror="this.style.display='none'">
       <span>${a.replace(/_/g, " ")}</span>
     `;
 

@@ -115,8 +115,22 @@ function formatPrice(v) {
   return `${n.toFixed(2)} \u20AC`;
 }
 
+const BASE_HREF = (() => {
+  const envBase =
+    typeof import.meta !== "undefined" && import.meta.env
+      ? import.meta.env.BASE_URL
+      : null;
+  if (envBase) return envBase.endsWith("/") ? envBase : `${envBase}/`;
+  const baseTag = document.querySelector("base");
+  const href = baseTag?.getAttribute("href");
+  if (href) return href.endsWith("/") ? href : `${href}/`;
+  return "/";
+})();
+
 function baseUrl(path) {
-  return new URL(path, document.baseURI).toString();
+  const clean = String(path || "").replace(/^\//, "");
+  const base = new URL(BASE_HREF, window.location.origin);
+  return new URL(clean, base).toString();
 }
 
 function normalizeAllergenKey(v) {
