@@ -275,7 +275,7 @@ function handleBackNavigation() {
 
   if (searchOverlay?.classList.contains("is-open")) {
     closeSearchOverlay();
-  } else if (wifiPinModal?.classList.contains("open")) {
+  } else if (wifiPinModal?.classList.contains("is-open")) {
     closeWifiPinModal();
   } else if (allergenZoom?.classList.contains("is-open")) {
     closeAllergenZoom();
@@ -1352,7 +1352,7 @@ function openWifiPinModal(ctx) {
   }
   if (wifiPinModal) {
     wifiPinModal.setAttribute("aria-hidden", "false");
-    wifiPinModal.classList.add("open");
+    wifiPinModal.classList.add("is-open");
   }
   setTimeout(() => wifiPinInput?.focus?.(), 50);
 }
@@ -1360,7 +1360,7 @@ function openWifiPinModal(ctx) {
 function closeWifiPinModal() {
   if (wifiPinModal) {
     wifiPinModal.setAttribute("aria-hidden", "true");
-    wifiPinModal.classList.remove("open");
+    wifiPinModal.classList.remove("is-open");
   }
   _wifiCtx = null;
 }
