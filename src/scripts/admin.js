@@ -128,7 +128,8 @@ const BASE_HREF = (() => {
   const href = baseTag?.getAttribute("href");
   if (href && href !== "/") return href.endsWith("/") ? href : `${href}/`;
   const path = window.location.pathname;
-  return path.endsWith("/") ? path : path.replace(/\/[^/]*$/, "/");
+  const parts = path.split("/").filter(Boolean);
+  return parts.length ? `/${parts[0]}/` : "/";
 })();
 
 function assetUrl(path) {
