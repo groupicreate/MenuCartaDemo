@@ -122,17 +122,18 @@ const BASE_HREF = (() => {
     typeof import.meta !== "undefined" && import.meta.env
       ? import.meta.env.BASE_URL
       : null;
-  if (envBase) return envBase.endsWith("/") ? envBase : `${envBase}/`;
+  if (envBase && envBase !== "/")
+    return envBase.endsWith("/") ? envBase : `${envBase}/`;
   const baseTag = document.querySelector("base");
   const href = baseTag?.getAttribute("href");
-  if (href) return href.endsWith("/") ? href : `${href}/`;
-  return "/";
+  if (href && href !== "/") return href.endsWith("/") ? href : `${href}/`;
+  const path = window.location.pathname;
+  return path.endsWith("/") ? path : path.replace(/\/[^/]*$/, "/");
 })();
 
 function assetUrl(path) {
   const clean = String(path || "").replace(/^\//, "");
-  const base = new URL(BASE_HREF, window.location.origin);
-  return new URL(clean, base).toString();
+  return new URL(clean, window.location.origin + BASE_HREF).toString();
 }
 
 function showPreview(el, url) {
