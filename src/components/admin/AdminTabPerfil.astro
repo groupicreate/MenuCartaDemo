@@ -7,17 +7,19 @@
         <input id="perfilNombre" placeholder="Nombre del bar/restaurante" />
       </div>
       <div>
-        <label>UID de usuario (solo lectura)</label>
+        <label>UID de cliente (solo lectura)</label>
         <input id="perfilUid" readonly placeholder="-" />
       </div>
     </div>
 
     <div class="grid-2">
       <div>
-        <label>Slug (para URL bonita)</label>
-        <input id="perfilSlug" placeholder="alpine-meadow" />
+        <label>Slug (solo lectura)</label>
+        <input id="perfilSlug" readonly placeholder="-" />
+        <label style="margin-top: 10px">URL completa (solo lectura)</label>
+        <input id="perfilSlugUrl" readonly placeholder="https://..." />
         <small class="hint"
-          >Tu carta podrá abrirse como: <b>https://icreategroup.github.io/iMenu/Slug</b></small
+          >Copia y pega esta URL en el navegador.</small
         >
       </div>
       <div>

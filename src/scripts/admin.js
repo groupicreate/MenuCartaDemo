@@ -54,6 +54,7 @@ const loginError = document.getElementById("loginError");
 const perfilNombre = document.getElementById("perfilNombre");
 const perfilUid = document.getElementById("perfilUid");
 const perfilSlug = document.getElementById("perfilSlug");
+const perfilSlugUrl = document.getElementById("perfilSlugUrl");
 const perfilTelefono = document.getElementById("perfilTelefono");
 const perfilDireccion = document.getElementById("perfilDireccion");
 const perfilWifi = document.getElementById("perfilWifi");
@@ -108,15 +109,6 @@ function safeText(v) {
   return (v ?? "").toString();
 }
 
-function slugify(input) {
-  return safeText(input)
-    .normalize("NFD")
-    .replace(/\p{Diacritic}/gu, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
-}
-
 const BASE_HREF = (() => {
   const envBase =
     typeof import.meta !== "undefined" && import.meta.env
@@ -134,6 +126,12 @@ const BASE_HREF = (() => {
 
 function assetUrl(path) {
   const clean = String(path || "").replace(/^\//, "");
+  return new URL(clean, window.location.origin + BASE_HREF).toString();
+}
+
+function menuUrlFromSlug(slug) {
+  const clean = safeText(slug).trim().replace(/^\//, "");
+  if (!clean) return "";
   return new URL(clean, window.location.origin + BASE_HREF).toString();
 }
 
@@ -303,6 +301,7 @@ async function cargarPerfil() {
   if (data) {
     perfilNombre.value = safeText(data.nombre);
     perfilSlug.value = safeText(data.slug);
+    if (perfilSlugUrl) perfilSlugUrl.value = menuUrlFromSlug(data.slug);
     perfilTelefono.value = safeText(data.telefono);
     perfilDireccion.value = safeText(data.direccion);
 
@@ -319,11 +318,6 @@ async function cargarPerfil() {
     showPreview(perfilPortadaPreview, data.portada_url);
   }
 }
-
-// Autogenerar slug si está vacío
-perfilNombre?.addEventListener("input", () => {
-  if (!perfilSlug.value.trim()) perfilSlug.value = slugify(perfilNombre.value);
-});
 
 perfilPortadaUrl?.addEventListener("input", () => {
   showPreview(perfilPortadaPreview, perfilPortadaUrl.value.trim());
@@ -351,7 +345,6 @@ document.getElementById("guardarPerfilBtn").onclick = async () => {
     const payload = {
       user_id: currentUser.id,
       nombre: perfilNombre.value.trim() || null,
-      slug: perfilSlug.value.trim() || null,
       telefono: perfilTelefono.value.trim() || null,
       direccion: perfilDireccion.value.trim() || null,
 
