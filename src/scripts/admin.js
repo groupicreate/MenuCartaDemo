@@ -132,7 +132,9 @@ function assetUrl(path) {
 function menuUrlFromSlug(slug) {
   const clean = safeText(slug).trim().replace(/^\//, "");
   if (!clean) return "";
-  return new URL(clean, window.location.origin + BASE_HREF).toString();
+  const baseUrl = new URL(BASE_HREF, window.location.origin);
+  baseUrl.searchParams.set("cliente", clean);
+  return baseUrl.toString();
 }
 
 function showPreview(el, url) {
