@@ -1,12 +1,21 @@
 <div id="tab-categorias" class="tab-content">
   <div class="form-box">
-    <h3 id="categoria-form-title">➕ Nueva Categoría</h3>
+    <div class="form-header">
+      <div>
+        <h3 id="categoria-form-title">➕ Nueva Categoría</h3>
+        <p class="form-subtitle">Organiza el menú por secciones.</p>
+      </div>
+    </div>
     <input type="hidden" id="editCategoriaId" />
-    <input id="categoriaNombre" placeholder="Nombre de la categoría" />
-    <button id="guardarCategoriaBtn">Guardar</button>
-    <button class="cancel" id="cancelCategoriaBtn" style="display: none">
-      Cancelar
-    </button>
+    <div class="form-stack">
+      <input id="categoriaNombre" placeholder="Nombre de la categoría" />
+    </div>
+    <div class="form-actions">
+      <button id="guardarCategoriaBtn">Guardar</button>
+      <button class="cancel" id="cancelCategoriaBtn" style="display: none">
+        Cancelar
+      </button>
+    </div>
   </div>
 
   <div id="categoriasContainer"></div>

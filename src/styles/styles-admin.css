@@ -4,6 +4,19 @@
     box-sizing: border-box;
 }
 
+:root {
+    --bg: #0a0a0a;
+    --panel: #151515;
+    --panel-2: #1c1c1c;
+    --panel-3: #222222;
+    --border: #2d2d2d;
+    --accent: #ffe800;
+    --accent-strong: #fff200;
+    --text: #f3f3f3;
+    --muted: #b6b6b6;
+    --radius: 14px;
+}
+
 body {
     font-family:
         "Inter",
@@ -11,9 +24,18 @@ body {
         BlinkMacSystemFont,
         "Segoe UI",
         sans-serif;
-    background-color: #0a0a0a;
-    color: #e0e0e0;
+    background:
+        radial-gradient(1200px 600px at 15% -15%, rgba(255, 232, 0, 0.14), transparent 60%),
+        radial-gradient(900px 500px at 85% -25%, rgba(255, 232, 0, 0.08), transparent 60%),
+        var(--bg);
+    color: var(--text);
     padding: 20px;
+}
+
+input,
+select,
+button {
+    font: inherit;
 }
 
 /* Clickables */
@@ -53,12 +75,112 @@ button:active,
 ============================= */
 .grid-2 {
     display: grid;
-    grid-template-columns: 1fr;
-    gap: 12px;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
 }
 @media (min-width: 700px) {
     .grid-2 {
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+.form-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 18px;
+}
+
+.form-subtitle {
+    margin-top: 6px;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.form-section {
+    border: 1px solid var(--border);
+    background: var(--panel-2);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+}
+
+.section-header {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.section-header h4 {
+    margin: 0;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+}
+
+.section-hint {
+    margin: 0;
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.section-body {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.inline-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.inline-actions input {
+    flex: 1;
+    min-width: 0;
+}
+
+.inline-actions button {
+    flex: 0 0 auto;
+}
+
+.form-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    align-items: center;
+    margin-top: 6px;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 720px) {
+    .inline-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .form-actions {
+        justify-content: stretch;
+    }
+
+    .form-actions button {
+        width: 100%;
     }
 }
 
@@ -76,8 +198,8 @@ button:active,
 }
 
 .edit-aside {
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: var(--panel-2);
+    border: 1px solid var(--border);
     border-radius: 14px;
     padding: 12px;
     box-shadow: 0 10px 26px rgba(0, 0, 0, 0.25);
@@ -131,21 +253,29 @@ button:active,
 
 .form-box label {
     display: block;
-    margin: 10px 0 6px;
+    margin: 0;
     font-weight: 600;
+}
+
+.form-box .field label {
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 0.02em;
 }
 .hint {
     display: block;
-    opacity: 0.75;
+    opacity: 0.8;
     margin-top: 6px;
     font-size: 12px;
+    color: var(--muted);
 }
 
 .image-preview {
-    margin-top: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    margin-top: 4px;
+    border: 1px solid var(--border);
     border-radius: 12px;
     overflow: hidden;
+    background: #101010;
 }
 .image-preview img {
     width: 100%;
@@ -156,17 +286,18 @@ button:active,
 .admin-container {
     max-width: 1200px;
     margin: 20px auto;
-    background: #1a1a1a;
-    padding: 30px;
-    box-shadow: 0 5px 20px rgba(255, 255, 0, 0.1);
-    border-radius: 8px;
-    border: 1px solid #2a2a2a;
+    background: linear-gradient(180deg, #171717 0%, #141414 100%);
+    padding: 32px 32px 40px;
+    box-shadow:
+        0 20px 50px rgba(0, 0, 0, 0.35),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+    border-radius: 18px;
+    border: 1px solid var(--border);
 }
 
 h1,
 h2,
 h3 {
-    margin-bottom: 20px;
     color: #ffffff;
 }
 h1 {
@@ -175,6 +306,21 @@ h1 {
     align-items: center;
     justify-content: center;
     gap: 15px;
+    margin-bottom: 26px;
+    font-size: 28px;
+    letter-spacing: 0.02em;
+}
+
+h2 {
+    margin-bottom: 16px;
+}
+
+h3 {
+    margin-bottom: 12px;
+}
+
+.form-header h3 {
+    margin: 0;
 }
 
 h1 svg {
@@ -184,30 +330,40 @@ h1 svg {
 }
 
 /* Login */
+#login-form {
+    max-width: 420px;
+    margin: 0 auto 28px;
+    padding: 24px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+}
+
 #login-form input {
     width: 100%;
-    padding: 10px;
-    margin: 5px 0;
-    border: 1px solid #333;
-    border-radius: 4px;
-    background: #2a2a2a;
-    color: #e0e0e0;
+    padding: 10px 12px;
+    margin: 8px 0;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--panel-3);
+    color: var(--text);
 }
 
 #login-form input:focus {
     outline: none;
-    border-color: #ffff00;
-    box-shadow: 0 0 0 2px rgba(255, 255, 0, 0.1);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(255, 232, 0, 0.12);
 }
 
 #login-form button {
     width: 100%;
     padding: 12px;
-    margin-top: 10px;
-    background: #ffff00;
+    margin-top: 12px;
+    background: var(--accent);
     color: #0a0a0a;
     border: none;
-    border-radius: 4px;
+    border-radius: 10px;
     cursor: pointer;
     font-size: 16px;
     font-weight: 600;
@@ -216,8 +372,8 @@ h1 svg {
 
 #login-form button:hover {
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(255, 255, 0, 0.4);
-    background: #ffff33;
+    box-shadow: 0 10px 24px rgba(255, 232, 0, 0.25);
+    background: var(--accent-strong);
 }
 
 #loginError {
@@ -228,32 +384,38 @@ h1 svg {
 /* Tabs */
 .tabs {
     display: flex;
-    gap: 10px;
-    margin-bottom: 30px;
-    border-bottom: 2px solid #2a2a2a;
+    gap: 8px;
+    margin-bottom: 24px;
+    padding: 6px;
+    background: #101010;
+    border: 1px solid var(--border);
+    border-radius: 999px;
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .tab {
-    padding: 12px 24px;
+    padding: 10px 18px;
     cursor: pointer;
     background: transparent;
-    border: none;
-    font-size: 16px;
-    color: #888;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    font-size: 14px;
+    color: var(--muted);
     transition: all 0.3s;
     flex-shrink: 0;
+    font-weight: 600;
 }
 
 .tab.active {
-    color: #ffff00;
-    font-weight: 600;
-    border-bottom: 3px solid #ffff00;
+    color: #111111;
+    background: var(--accent);
+    box-shadow: 0 8px 18px rgba(255, 232, 0, 0.22);
 }
 
 .tab:hover {
-    background: #2a2a2a;
-    color: #ffff00;
+    background: rgba(255, 255, 255, 0.06);
+    color: #ffffff;
 }
 
 .tab-content {
@@ -261,6 +423,18 @@ h1 svg {
 }
 .tab-content.active {
     display: block;
+    animation: fadeUp 0.18s ease;
+}
+
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* Categorías */
@@ -269,10 +443,10 @@ h1 svg {
     align-items: center;
     gap: 15px;
     padding: 15px;
-    border: 1px solid #2a2a2a;
-    border-radius: 6px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
     margin-bottom: 10px;
-    background: #1a1a1a;
+    background: var(--panel-2);
     transition: all 0.2s;
     /* Evitar que el item completo sea draggable */
     user-select: none;
@@ -281,7 +455,7 @@ h1 svg {
 
 .categoria-item.inactiva {
     opacity: 0.5;
-    background: #151515;
+    background: #141414;
 }
 
 /* Efecto visual mejorado al arrastrar */
@@ -329,7 +503,7 @@ h1 svg {
 .categoria-actions button {
     padding: 6px 12px;
     border: none;
-    border-radius: 4px;
+    border-radius: 10px;
     cursor: pointer;
     font-size: 14px;
     white-space: nowrap;
@@ -365,60 +539,87 @@ h1 svg {
 
 /* Formularios */
 .form-box {
-    background: #1a1a1a;
-    padding: 20px;
-    border-radius: 6px;
-    margin-bottom: 30px;
-    border: 1px solid #2a2a2a;
+    background: var(--panel);
+    padding: 22px;
+    border-radius: 16px;
+    margin-bottom: 26px;
+    border: 1px solid var(--border);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
 .form-box input,
 .form-box select {
     width: 100%;
-    padding: 10px;
-    margin: 8px 0;
-    border: 1px solid #333;
-    border-radius: 4px;
-    background: #2a2a2a;
-    color: #e0e0e0;
+    padding: 10px 12px;
+    margin: 0;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--panel-3);
+    color: var(--text);
 }
 
 .form-box input:focus,
 .form-box select:focus {
     outline: none;
-    border-color: #ffff00;
-    box-shadow: 0 0 0 2px rgba(255, 255, 0, 0.1);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(255, 232, 0, 0.12);
 }
 
 .form-box button {
-    padding: 10px 20px;
-    background-color: #ffff00;
-    color: #0a0a0a;
+    padding: 10px 18px;
+    background-color: var(--accent);
+    color: #111111;
     border: none;
-    border-radius: 4px;
+    border-radius: 10px;
     cursor: pointer;
     font-size: 16px;
-    font-weight: 600;
-    margin-top: 10px;
+    font-weight: 700;
     transition: all 0.3s;
 }
 
 .form-box button:hover {
-    background-color: #ffff33;
-    box-shadow: 0 2px 8px rgba(255, 255, 0, 0.3);
+    background-color: var(--accent-strong);
+    box-shadow: 0 10px 24px rgba(255, 232, 0, 0.25);
     transform: translateY(-1px);
 }
 
 .form-box button.cancel {
-    background-color: #2a2a2a;
-    color: #e0e0e0;
-    margin-left: 10px;
-    border: 1px solid #444;
+    background-color: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
 }
 
 .form-box button.cancel:hover {
-    background-color: #333;
-    border-color: #ffff00;
+    background-color: #1f1f1f;
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.secondaryBtn {
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text);
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.secondaryBtn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(255, 232, 0, 0.08);
+}
+
+.form-box input::placeholder,
+.form-box select::placeholder {
+    color: rgba(255, 255, 255, 0.45);
+}
+
+.form-box input[readonly] {
+    background: #181818;
+    color: #9e9e9e;
+    border-style: dashed;
 }
 
 /* Alérgenos */
@@ -430,6 +631,9 @@ h1 svg {
     font-weight: 600;
     margin-bottom: 10px;
     color: #e0e0e0;
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: 14px;
 }
 
 .alergenos-grid {
@@ -437,9 +641,9 @@ h1 svg {
     grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
     gap: 10px;
     padding: 15px;
-    background: #1a1a1a;
-    border: 1px solid #2a2a2a;
-    border-radius: 4px;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
     max-height: 300px;
     overflow-y: auto;
 }
@@ -449,11 +653,11 @@ h1 svg {
     flex-direction: column;
     align-items: center;
     padding: 10px;
-    border: 2px solid #2a2a2a;
-    border-radius: 6px;
+    border: 2px solid var(--border);
+    border-radius: 10px;
     cursor: pointer;
     transition: all 0.2s;
-    background: #1a1a1a;
+    background: var(--panel);
 }
 
 .alergeno-item:hover {
@@ -481,6 +685,41 @@ h1 svg {
 }
 
 /* Platos */
+.platos-toolbar {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    padding: 12px;
+    border-radius: 12px;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    margin: 12px 0 18px;
+    flex-wrap: wrap;
+}
+
+.platos-toolbar label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.platos-toolbar select,
+.platos-toolbar input {
+    min-height: 40px;
+    border-radius: 10px;
+    padding: 8px 12px;
+    background: var(--panel-3);
+    border: 1px solid var(--border);
+    color: var(--text);
+}
+
+.platos-toolbar input {
+    flex: 1;
+    min-width: 220px;
+}
+
 .platos-por-categoria {
     margin-bottom: 40px;
 }
@@ -500,10 +739,10 @@ h1 svg {
     align-items: center;
     gap: 15px;
     padding: 12px;
-    border: 1px solid #2a2a2a;
-    border-radius: 6px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
     margin-bottom: 8px;
-    background: #1a1a1a;
+    background: var(--panel-2);
     transition: all 0.2s;
     /* Evitar que el item completo sea draggable */
     user-select: none;
@@ -512,7 +751,7 @@ h1 svg {
 
 .plato-item.inactivo {
     opacity: 0.5;
-    background: #151515;
+    background: #141414;
 }
 
 /* Efecto visual mejorado al arrastrar */
@@ -557,7 +796,7 @@ h1 svg {
 
 .plato-precio {
     font-weight: 600;
-    color: #ffff00;
+    color: var(--accent);
     white-space: nowrap;
     margin-right: 15px;
 }
@@ -571,7 +810,7 @@ h1 svg {
 .plato-actions button {
     padding: 5px 10px;
     border: none;
-    border-radius: 4px;
+    border-radius: 10px;
     cursor: pointer;
     font-size: 13px;
     transition: all 0.3s;
@@ -579,21 +818,21 @@ h1 svg {
 
 #logoutBtn {
     margin-top: 30px;
-    background-color: #2a2a2a;
-    color: #e0e0e0;
+    background-color: transparent;
+    color: var(--muted);
     width: 100%;
     padding: 12px;
-    border: 1px solid #444;
-    border-radius: 4px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
     cursor: pointer;
     font-size: 16px;
     transition: all 0.3s;
 }
 
 #logoutBtn:hover {
-    background-color: #333;
-    border-color: #ffff00;
-    color: #ffff00;
+    background-color: rgba(255, 232, 0, 0.08);
+    border-color: var(--accent);
+    color: var(--accent);
 }
 
 .empty-state {
@@ -628,6 +867,15 @@ h1 svg {
 
     .form-box {
         padding: 15px;
+    }
+
+    .form-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .form-section {
+        padding: 14px;
     }
 
     .form-box button.cancel {
