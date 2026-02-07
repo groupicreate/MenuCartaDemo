@@ -935,7 +935,7 @@ guardarPlatoBtn.onclick = async () => {
     const id = editPlatoId.value;
     const { error } = id
       ? await db.from("Menu").update(payload).eq("id", id)
-      : await supabase
+      : await db
           .from("Menu")
           .insert({ ...payload, activo: true, orden: 0 });
 
