@@ -35,6 +35,12 @@ const cover = document.getElementById("cover");
 const coverImg = document.getElementById("coverImg");
 const placeTitle = document.getElementById("placeTitle");
 const homeCategories = document.getElementById("homeCategories");
+const langBtn = document.getElementById("langBtn");
+const langLabel = document.getElementById("langLabel");
+const langMenu = document.getElementById("langMenu");
+const langOptions = Array.from(
+  document.querySelectorAll(".langOption[data-lang]"),
+);
 
 const ratingBtn = document.getElementById("ratingBtn");
 const ratingPrimary = document.getElementById("ratingPrimary");
@@ -93,6 +99,7 @@ let ACTIVE_SUBCAT = "all";
 let SEARCH_Q = "";
 let SEARCH_ACTIVE_SUBCAT_KEY = null;
 let historyLocked = false;
+let CURRENT_LANG = "es";
 
 // Perfil (opcional): si existe tabla "Perfiles" o "Perfil", la usamos.
 let PROFILE = null;
@@ -100,6 +107,128 @@ let PROFILE = null;
 // =============================
 // Utils
 // =============================
+const LANG_STORAGE_KEY = "imenu.lang";
+const I18N = {
+  es: {
+    lang_label: "Español",
+    lang_button: "Idioma",
+    search: "Buscar",
+    back: "Volver",
+    categories: "Categorías",
+    subcategories: "Subcategorías",
+    loading: "Cargando...",
+    search_no_results: "Sin resultados.",
+    no_results: "No hay resultados.",
+    no_dishes: "No hay platos en esta sección.",
+    home_empty: "Esta carta aún no tiene categorías con platos.",
+    category_default: "Categoría",
+    subcat_all: "Todo",
+    subcat_other: "Otros",
+    home_title_default: "Carta",
+    invalid_url: "URL inválida",
+    error: "Error",
+    missing_param_html:
+      "Falta el parámetro <b>?cliente=</b> (UUID o slug) o <b>?bar=</b>.",
+    not_found: "No encontrado",
+    not_found_msg: "No existe ninguna carta con ese identificador.",
+    load_error: "No se pudo cargar la carta: {msg}",
+    reviews: "Reseñas",
+    view_reviews: "Ver reseñas",
+    info: "Info",
+    info_secondary_default: "Wi‑Fi, Teléfono y Dirección",
+    ratings: "Valoraciones",
+    stars: "Estrellas",
+    dish_details: "Detalle",
+    allergens: "Alérgenos",
+    allergen: "Alérgeno",
+    map: "Mapa",
+    close: "Cerrar",
+    clear: "Borrar",
+    results: "Resultados",
+    write_review_google: "Escribir reseña en Google",
+    view_on_google: "Ver en Google",
+    rating_aspect_food: "Comida",
+    rating_aspect_ambience: "Ambiente",
+    rating_aspect_service: "Servicio",
+    rating_aspect_clean: "Limpieza",
+    rating_aspect_price: "Precio",
+    wifi_title: "Wi‑Fi",
+    wifi_prompt: "Introduce el PIN",
+    wifi_pin_placeholder: "PIN",
+    wifi_show_key: "Ver clave",
+    wifi_copy_key: "Copiar clave",
+    wifi_network_prefix: "Red: ",
+    wifi_error_enter_pin: "Introduce el PIN.",
+    wifi_error_no_local: "No se pudo identificar el local.",
+    wifi_error_verify: "No se pudo verificar el PIN. Inténtalo de nuevo.",
+    wifi_error_wrong: "PIN incorrecto.",
+    wifi_result_prefix: "Clave: ",
+    phone: "Teléfono",
+    address: "Dirección",
+    open: "Abrir",
+    call: "Llamar",
+  },
+  en: {
+    lang_label: "English",
+    lang_button: "Language",
+    search: "Search",
+    back: "Back",
+    categories: "Categories",
+    subcategories: "Subcategories",
+    loading: "Loading...",
+    search_no_results: "No results.",
+    no_results: "No results.",
+    no_dishes: "No dishes in this section.",
+    home_empty: "This menu has no categories with dishes yet.",
+    category_default: "Category",
+    subcat_all: "All",
+    subcat_other: "Others",
+    home_title_default: "Menu",
+    invalid_url: "Invalid URL",
+    error: "Error",
+    missing_param_html:
+      "Missing parameter <b>?cliente=</b> (UUID or slug) or <b>?bar=</b>.",
+    not_found: "Not found",
+    not_found_msg: "No menu found with that identifier.",
+    load_error: "Couldn't load the menu: {msg}",
+    reviews: "Reviews",
+    view_reviews: "View reviews",
+    info: "Info",
+    info_secondary_default: "Wi‑Fi, Phone and Address",
+    ratings: "Ratings",
+    stars: "Stars",
+    dish_details: "Details",
+    allergens: "Allergens",
+    allergen: "Allergen",
+    map: "Map",
+    close: "Close",
+    clear: "Clear",
+    results: "Results",
+    write_review_google: "Write a Google review",
+    view_on_google: "View on Google",
+    rating_aspect_food: "Food",
+    rating_aspect_ambience: "Ambience",
+    rating_aspect_service: "Service",
+    rating_aspect_clean: "Cleanliness",
+    rating_aspect_price: "Price",
+    wifi_title: "Wi‑Fi",
+    wifi_prompt: "Enter PIN",
+    wifi_pin_placeholder: "PIN",
+    wifi_show_key: "Show password",
+    wifi_copy_key: "Copy password",
+    wifi_network_prefix: "Network: ",
+    wifi_error_enter_pin: "Enter the PIN.",
+    wifi_error_no_local: "Could not identify the venue.",
+    wifi_error_verify: "Couldn't verify the PIN. Try again.",
+    wifi_error_wrong: "Incorrect PIN.",
+    wifi_result_prefix: "Password: ",
+    phone: "Phone",
+    address: "Address",
+    open: "Open",
+    call: "Call",
+  },
+};
+
 function normalize(str) {
   return (str || "")
     .toString()
@@ -225,6 +354,125 @@ function pick(obj, keys) {
   return null;
 }
 
+function t(key, vars) {
+  const dict = I18N[CURRENT_LANG] || I18N.es;
+  let str = dict?.[key] ?? I18N.es?.[key] ?? key;
+  if (vars) {
+    for (const [k, v] of Object.entries(vars)) {
+      str = str.replaceAll(`{${k}}`, String(v));
+    }
+  }
+  return str;
+}
+
+function applyI18nToDom() {
+  document.querySelectorAll("[data-i18n]").forEach((el) => {
+    const key = el.dataset.i18n;
+    const attr = el.dataset.i18nAttr;
+    const value = t(key);
+    if (attr) el.setAttribute(attr, value);
+    else el.textContent = value;
+  });
+}
+
+function localizeField(obj, baseKey, fallbackKeys = []) {
+  if (!obj) return "";
+  if (CURRENT_LANG === "en") {
+    const enKey = `${baseKey}_en`;
+    const enVal = obj[enKey];
+    if (enVal != null && enVal !== "") return enVal;
+  }
+  const value = pick(obj, [baseKey, ...fallbackKeys]);
+  return value != null ? value : "";
+}
+
+function getCategoryName(cat) {
+  return safeText(localizeField(cat, "nombre"));
+}
+
+function getDishName(plato) {
+  return safeText(localizeField(plato, "plato"));
+}
+
+function getDishDesc(plato) {
+  return safeText(localizeField(plato, "descripcion"));
+}
+
+function getDishSubcat(plato) {
+  return safeText(
+    localizeField(plato, "subcategoria", ["sub_category", "subcat"]),
+  );
+}
+
+function updateReviewsButtonText() {
+  if (!openReviewsBtn) return;
+  const writeReviewUrl = PROFILE ? getWriteReviewUrl(PROFILE) : null;
+  const fallbackReviewsUrl = PROFILE
+    ? pick(PROFILE, ["reviews_url", "valoraciones_url"])
+    : null;
+  const finalReviewsUrl = writeReviewUrl || fallbackReviewsUrl;
+  if (!finalReviewsUrl) return;
+  openReviewsBtn.textContent = writeReviewUrl
+    ? t("write_review_google")
+    : t("view_on_google");
+}
+
+function applyI18n({ rerender = true } = {}) {
+  if (langMenu?.classList.contains("is-open")) closeLangMenu();
+  if (langBtn) langBtn.setAttribute("aria-expanded", "false");
+  if (langLabel) langLabel.textContent = t("lang_label");
+  document.documentElement.lang = CURRENT_LANG;
+  applyI18nToDom();
+
+  langOptions.forEach((opt) => {
+    const active = opt.dataset.lang === CURRENT_LANG;
+    opt.classList.toggle("is-active", active);
+    opt.setAttribute("aria-selected", active ? "true" : "false");
+  });
+
+  if (!ACTIVE_CAT_ID && categoryTitle) {
+    categoryTitle.textContent = t("category_default");
+  }
+  if (!PROFILE && placeTitle) {
+    placeTitle.textContent = t("home_title_default");
+  }
+  updateReviewsButtonText();
+  if (infoSheet?.classList.contains("is-open")) {
+    const name = pick(PROFILE, [
+      "nombre",
+      "name",
+      "restaurant_name",
+      "local_name",
+      "titulo",
+    ]);
+    infoTitle.textContent = name ? name : t("info");
+  }
+
+  if (rerender) {
+    applyProfileToHome();
+    renderHome();
+    renderSearchDropdown();
+    if (ACTIVE_CAT_ID) {
+      ACTIVE_SUBCAT = "all";
+      renderSubcatChips(ACTIVE_CAT_ID);
+      renderDishList(ACTIVE_CAT_ID);
+    }
+  }
+}
+
+function setLang(lang, { persist = true, rerender = true } = {}) {
+  if (!I18N[lang]) return;
+  CURRENT_LANG = lang;
+  if (persist) localStorage.setItem(LANG_STORAGE_KEY, lang);
+  applyI18n({ rerender });
+}
+
+function initLang() {
+  const stored = localStorage.getItem(LANG_STORAGE_KEY);
+  if (stored && I18N[stored]) CURRENT_LANG = stored;
+  applyI18n({ rerender: false });
+}
+
 function getWriteReviewUrl(profile) {
   const placeId = pick(profile, [
     "google_place_id",
@@ -323,8 +571,9 @@ function openSheet(plato) {
   ]);
   if (imgUrl) {
     sheetImageWrap.style.display = "";
+    const dishName = getDishName(plato);
     sheetImage.src = imgUrl;
-    sheetImage.alt = plato.plato ? `${plato.plato}` : "";
+    sheetImage.alt = dishName ? `${dishName}` : "";
     attachImageFallback(sheetImage, () => {
       sheetImageWrap.style.display = "none";
     });
@@ -333,10 +582,10 @@ function openSheet(plato) {
     sheetImage.removeAttribute("src");
   }
 
-  sheetTitle.textContent = safeText(plato.plato);
+  sheetTitle.textContent = getDishName(plato);
   sheetPrice.textContent =
     plato.precio != null ? formatPrice(plato.precio) : "";
-  sheetDesc.textContent = safeText(plato.descripcion);
+  sheetDesc.textContent = getDishDesc(plato);
 
   // alergenos: usamos tus SVG de /alergenos (sin texto). Click => ampliar.
   const alergs = Array.isArray(plato.alergenos) ? plato.alergenos : [];
@@ -450,7 +699,7 @@ function openAllergenZoom(src, title) {
   if (!allergenZoom) return;
   pushHistoryState({ modal: "allergen" });
   allergenZoomImg.src = src;
-  allergenZoomTitle.textContent = title || "Alérgeno";
+  allergenZoomTitle.textContent = title || t("allergen");
   allergenZoom.classList.add("is-open");
   allergenZoom.setAttribute("aria-hidden", "false");
 }
@@ -487,7 +736,7 @@ function renderHome() {
   if (!catsWithItems.length) {
     const p = document.createElement("p");
     p.className = "muted";
-    p.textContent = "Esta carta aún no tiene categorías con platos.";
+    p.textContent = t("home_empty");
     homeCategories.appendChild(p);
     return;
   }
@@ -496,7 +745,7 @@ function renderHome() {
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = "catBtn";
-    btn.textContent = cat.nombre;
+    btn.textContent = getCategoryName(cat);
     btn.addEventListener("click", () => {
       goCategory(String(cat.id));
     });
@@ -522,7 +771,7 @@ function renderSubcatChips(catId) {
   const subcats = Array.from(
     new Set(
       platosCat
-        .map((p) => pick(p, ["subcategoria", "sub_category", "subcat"]))
+        .map((p) => getDishSubcat(p))
         .filter(Boolean)
         .map((s) => safeText(s).trim())
         .filter(Boolean),
@@ -530,7 +779,7 @@ function renderSubcatChips(catId) {
   );
 
   // Siempre "Todo"
-  const allChip = buildChip("Todo", ACTIVE_SUBCAT === "all");
+  const allChip = buildChip(t("subcat_all"), ACTIVE_SUBCAT === "all");
   allChip.addEventListener("click", () => {
     ACTIVE_SUBCAT = "all";
     renderSubcatChips(catId);
@@ -551,15 +800,14 @@ function renderSubcatChips(catId) {
 
 function getSubcatLabel(plato) {
   return (
-    safeText(pick(plato, ["subcategoria", "sub_category", "subcat"]))
-      .trim() || "Otros"
+    safeText(getDishSubcat(plato)).trim() || t("subcat_other")
   );
 }
 
 function matchesSearch(plato, q) {
   if (!q) return true;
-  const name = normalize(plato.plato);
-  const desc = normalize(plato.descripcion);
+  const name = normalize(getDishName(plato));
+  const desc = normalize(getDishDesc(plato));
   return name.includes(q) || desc.includes(q);
 }
 
@@ -570,7 +818,7 @@ function renderSearchDropdown() {
   if (!PLATOS.length || !CATEGORIAS.length) {
     const empty = document.createElement("div");
     empty.className = "searchEmpty";
-    empty.textContent = "Cargando...";
+    empty.textContent = t("loading");
     searchDropdown.appendChild(empty);
     return;
   }
@@ -581,7 +829,7 @@ function renderSearchDropdown() {
   if (!filtered.length) {
     const empty = document.createElement("div");
     empty.className = "searchEmpty";
-    empty.textContent = "Sin resultados.";
+    empty.textContent = t("search_no_results");
     searchDropdown.appendChild(empty);
     return;
   }
@@ -660,9 +908,7 @@ function renderSearchDropdown() {
 
 function goToItemFromSearch(plato) {
   const catId = String(plato.categoria_id);
-  const subcatRaw = safeText(
-    pick(plato, ["subcategoria", "sub_category", "subcat"]),
-  ).trim();
+  const subcatRaw = safeText(getDishSubcat(plato)).trim();
 
   ACTIVE_CAT_ID = catId;
   ACTIVE_SUBCAT = subcatRaw || "all";
@@ -681,14 +927,14 @@ function goToItemFromSearch(plato) {
 function passesSearch(plato) {
   const q = normalize(SEARCH_Q);
   if (!q) return true;
-  const name = normalize(plato.plato);
-  const desc = normalize(plato.descripcion);
+  const name = normalize(getDishName(plato));
+  const desc = normalize(getDishDesc(plato));
   return name.includes(q) || desc.includes(q);
 }
 
 function renderDishList(catId) {
   const cat = CATEGORIAS.find((c) => String(c.id) === String(catId));
-  categoryTitle.textContent = cat ? cat.nombre : "Categoría";
+  categoryTitle.textContent = cat ? getCategoryName(cat) : t("category_default");
 
   dishList.innerHTML = "";
 
@@ -697,7 +943,7 @@ function renderDishList(catId) {
   )
     .filter((p) => {
       if (ACTIVE_SUBCAT === "all") return true;
-      const sc = pick(p, ["subcategoria", "sub_category", "subcat"]);
+      const sc = getDishSubcat(p);
       return safeText(sc).trim() === ACTIVE_SUBCAT;
     })
     .filter(passesSearch);
@@ -706,8 +952,8 @@ function renderDishList(catId) {
     const empty = document.createElement("div");
     empty.className = "empty";
     empty.textContent = SEARCH_Q
-      ? "No hay resultados."
-      : "No hay platos en esta sección.";
+      ? t("no_results")
+      : t("no_dishes");
     dishList.appendChild(empty);
     return;
   }
@@ -715,16 +961,13 @@ function renderDishList(catId) {
   // Si existen subcategorías, pintamos separadores por grupo (como NordQR)
   const hasSubcats = PLATOS.some(
     (p) =>
-      String(p.categoria_id) === String(catId) &&
-      pick(p, ["subcategoria", "sub_category", "subcat"]),
+      String(p.categoria_id) === String(catId) && getDishSubcat(p),
   );
   if (hasSubcats && ACTIVE_SUBCAT === "all") {
     const groups = new Map();
     platosCat.forEach((p) => {
-      const sc =
-        safeText(
-          pick(p, ["subcategoria", "sub_category", "subcat"]) || "Otros",
-        ).trim() || "Otros";
+      const sc = safeText(getDishSubcat(p) || t("subcat_other")).trim() ||
+        t("subcat_other");
       if (!groups.has(sc)) groups.set(sc, []);
       groups.get(sc).push(p);
     });
@@ -758,11 +1001,11 @@ function buildDishRow(plato) {
 
   const name = document.createElement("div");
   name.className = "dishName";
-  name.textContent = safeText(plato.plato);
+  name.textContent = getDishName(plato);
 
   const desc = document.createElement("div");
   desc.className = "dishDesc";
-  desc.textContent = safeText(plato.descripcion);
+  desc.textContent = getDishDesc(plato);
 
   const price = document.createElement("div");
   price.className = "dishPrice";
@@ -799,7 +1042,7 @@ function buildDishRow(plato) {
     left.appendChild(name);
   }
 
-  if (plato.descripcion) left.appendChild(desc);
+  if (desc.textContent) left.appendChild(desc);
   if (plato.precio != null) left.appendChild(price);
 
   const right = document.createElement("div");
@@ -814,7 +1057,7 @@ function buildDishRow(plato) {
   if (imgUrl) {
     const img = document.createElement("img");
     img.src = imgUrl;
-    img.alt = safeText(plato.plato);
+    img.alt = getDishName(plato);
     img.loading = "lazy";
     attachImageFallback(img, () => {
       right.style.display = "none";
@@ -841,11 +1084,11 @@ function buildSearchItemRow(plato) {
 
   const name = document.createElement("div");
   name.className = "dishName";
-  name.textContent = safeText(plato.plato);
+  name.textContent = getDishName(plato);
 
   const desc = document.createElement("div");
   desc.className = "dishDesc";
-  desc.textContent = safeText(plato.descripcion);
+  desc.textContent = getDishDesc(plato);
 
   const price = document.createElement("div");
   price.className = "dishPrice";
@@ -881,7 +1124,7 @@ function buildSearchItemRow(plato) {
     left.appendChild(name);
   }
 
-  if (plato.descripcion) left.appendChild(desc);
+  if (desc.textContent) left.appendChild(desc);
   if (plato.precio != null) left.appendChild(price);
 
   const right = document.createElement("div");
@@ -896,7 +1139,7 @@ function buildSearchItemRow(plato) {
   if (imgUrl) {
     const img = document.createElement("img");
     img.src = imgUrl;
-    img.alt = safeText(plato.plato);
+    img.alt = getDishName(plato);
     img.loading = "lazy";
     attachImageFallback(img, () => {
       right.style.display = "none";
@@ -969,7 +1212,7 @@ function applyProfileToHome() {
     // Fallback: si no hay portada, ponemos un degradado para no quedar feo
     coverImg.style.display = "none";
     cover.style.background = "linear-gradient(135deg, #d7d7dd, #f5f5f7)";
-    placeTitle.textContent = "Carta";
+    placeTitle.textContent = t("home_title_default");
     return;
   }
 
@@ -1006,15 +1249,15 @@ function applyProfileToHome() {
     ratingBtn.style.display = "";
 
     // Texto del botón (home)
-    ratingPrimary.textContent = "Rese\u00F1as";
-    ratingSecondary.textContent = "Ver reseñas";
+    ratingPrimary.textContent = t("reviews");
+    ratingSecondary.textContent = t("view_reviews");
   }
 
   // Info (opcional)
   const info = [];
-  if (pick(PROFILE, ["wifi", "wifi_name"])) info.push("Wi\u2011Fi");
-  if (pick(PROFILE, ["telefono", "phone"])) info.push("Tel\u00E9fono");
-  if (pick(PROFILE, ["direccion", "address"])) info.push("Direcci\u00F3n");
+  if (pick(PROFILE, ["wifi", "wifi_name"])) info.push(t("wifi_title"));
+  if (pick(PROFILE, ["telefono", "phone"])) info.push(t("phone"));
+  if (pick(PROFILE, ["direccion", "address"])) info.push(t("address"));
   if (info.length) {
     infoBtn.style.display = "";
     infoSecondary.textContent = info.join(", ");
@@ -1032,15 +1275,16 @@ function applyProfileToHome() {
       window.open(reviewsUrl, "_blank", "noopener"),
     );
   }
+
+  updateReviewsButtonText();
 }
 
 async function loadMenu() {
-  dishList.innerHTML = '<div class="loading">Cargando…</div>';
+  dishList.innerHTML = `<div class="loading">${t("loading")}</div>`;
 
   if (!clienteParam) {
-    placeTitle.textContent = "URL inválida";
-    homeCategories.innerHTML =
-      '<p class="muted">Falta el parámetro <b>?cliente=</b> (UUID o slug) o <b>?bar=</b>.</p>';
+    placeTitle.textContent = t("invalid_url");
+    homeCategories.innerHTML = `<p class="muted">${t("missing_param_html")}</p>`;
     return;
   }
 
@@ -1058,9 +1302,8 @@ async function loadMenu() {
       .maybeSingle();
 
     if (slugErr || !perfilBySlug?.user_id) {
-      placeTitle.textContent = "No encontrado";
-      homeCategories.innerHTML =
-        '<p class="muted">No existe ninguna carta con ese identificador.</p>';
+      placeTitle.textContent = t("not_found");
+      homeCategories.innerHTML = `<p class="muted">${t("not_found_msg")}</p>`;
       return;
     }
     clienteId = perfilBySlug.user_id;
@@ -1099,8 +1342,10 @@ async function loadMenu() {
     setView("home");
   } catch (e) {
     console.error(e);
-    placeTitle.textContent = "Error";
-    homeCategories.innerHTML = `<p class="muted">No se pudo cargar la carta: ${safeText(e.message)}</p>`;
+    placeTitle.textContent = t("error");
+    homeCategories.innerHTML = `<p class="muted">${t("load_error", {
+      msg: safeText(e.message),
+    })}</p>`;
   }
 }
 
@@ -1115,7 +1360,13 @@ function openRatingsSheet() {
   ratingsCount.style.display = "none";
 
   // Barras (UI): si no hay desglose real, aproximamos con el rating
-  const aspects = ["Comida", "Ambiente", "Servicio", "Limpieza", "Precio"];
+  const aspects = [
+    t("rating_aspect_food"),
+    t("rating_aspect_ambience"),
+    t("rating_aspect_service"),
+    t("rating_aspect_clean"),
+    t("rating_aspect_price"),
+  ];
   ratingsBars.innerHTML = "";
   const base = Number(rating) || 4.5;
   aspects.forEach((label, i) => {
@@ -1149,8 +1400,8 @@ function openRatingsSheet() {
   if (finalReviewsUrl) {
     openReviewsBtn.style.display = "";
     openReviewsBtn.textContent = writeReviewUrl
-      ? "Escribir reseña en Google"
-      : "Ver en Google";
+      ? t("write_review_google")
+      : t("view_on_google");
     openReviewsBtn.onclick = () =>
       window.open(finalReviewsUrl, "_blank", "noopener");
   } else {
@@ -1171,7 +1422,7 @@ function openInfoSheet() {
     "local_name",
     "titulo",
   ]);
-  infoTitle.textContent = name ? name : "Info";
+  infoTitle.textContent = name ? name : t("info");
 
   const direccion = pick(PROFILE, ["direccion", "address"]);
   if (direccion) {
@@ -1226,7 +1477,7 @@ function openInfoSheet() {
   if (wifiName) {
     const sub = wifiPass ? `${wifiName}` : `${wifiName}`;
     infoRows.appendChild(
-      row("\uD83D\uDCF6", "Wi\u2011Fi", sub, "Ver clave", () => {
+      row("\uD83D\uDCF6", t("wifi_title"), sub, t("wifi_show_key"), () => {
         openWifiPinModal({ wifiName, clienteId });
       }),
     );
@@ -1234,7 +1485,7 @@ function openInfoSheet() {
 
   if (telefono) {
     infoRows.appendChild(
-      row("\uD83D\uDCDE", "Tel\u00E9fono", telefono, "Llamar", () => {
+      row("\uD83D\uDCDE", t("phone"), telefono, t("call"), () => {
         window.location.href = `tel:${String(telefono).replace(/\s+/g, "")}`;
       }),
     );
@@ -1242,7 +1493,7 @@ function openInfoSheet() {
 
   if (direccion) {
     infoRows.appendChild(
-      row("\uD83D\uDCCD", "Direcci\u00F3n", direccion, "Abrir", () => {
+      row("\uD83D\uDCCD", t("address"), direccion, t("open"), () => {
         window.open(
           `https://www.google.com/maps?q=${encodeURIComponent(direccion)}`,
           "_blank",
@@ -1258,6 +1509,46 @@ function openInfoSheet() {
 // =============================
 // Events
 // =============================
+function openLangMenu() {
+  if (!langMenu || !langBtn) return;
+  langMenu.classList.add("is-open");
+  langMenu.setAttribute("aria-hidden", "false");
+  langBtn.setAttribute("aria-expanded", "true");
+}
+
+function closeLangMenu() {
+  if (!langMenu || !langBtn) return;
+  langMenu.classList.remove("is-open");
+  langMenu.setAttribute("aria-hidden", "true");
+  langBtn.setAttribute("aria-expanded", "false");
+}
+
+function toggleLangMenu() {
+  if (!langMenu) return;
+  if (langMenu.classList.contains("is-open")) closeLangMenu();
+  else openLangMenu();
+}
+
+langBtn?.addEventListener("click", (e) => {
+  e.stopPropagation();
+  toggleLangMenu();
+});
+
+langMenu?.addEventListener("click", (e) => {
+  const btn = e.target?.closest?.(".langOption");
+  if (!btn) return;
+  const lang = btn.dataset.lang;
+  if (lang) setLang(lang);
+  closeLangMenu();
+});
+
+document.addEventListener("click", (e) => {
+  if (!langMenu?.classList.contains("is-open")) return;
+  const target = e.target;
+  if (langMenu.contains(target) || langBtn?.contains(target)) return;
+  closeLangMenu();
+});
+
 backBtn.addEventListener("click", goHome);
 
 ratingBtn.addEventListener("click", () => {
@@ -1313,6 +1604,7 @@ infoSheet.addEventListener("click", (e) => {
 
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") {
+    if (langMenu?.classList.contains("is-open")) closeLangMenu();
     if (dishSheet.classList.contains("is-open")) closeSheet();
     if (ratingsSheet.classList.contains("is-open"))
       closeGenericSheet(ratingsSheet);
@@ -1324,6 +1616,7 @@ document.addEventListener("keydown", (e) => {
 // =============================
 // Init
 // =============================
+initLang();
 loadMenu();
 
 // =============================
@@ -1358,13 +1651,15 @@ function openWifiPinModal(ctx) {
   _wifiCtx = { ...ctx, wifiPass: null };
   window.imenuPublic.wifiCtx = _wifiCtx;
   if (wifiPinSsid)
-    wifiPinSsid.textContent = ctx.wifiName ? `Red: ${ctx.wifiName}` : "";
+    wifiPinSsid.textContent = ctx.wifiName
+      ? `${t("wifi_network_prefix")}${ctx.wifiName}`
+      : "";
   showWifiError("");
   showWifiResult("");
   if (wifiPinInput) wifiPinInput.value = "";
   if (wifiPinCopy) {
     wifiPinCopy.disabled = true;
-    wifiPinCopy.textContent = "Copiar clave";
+    wifiPinCopy.textContent = t("wifi_copy_key");
   }
   if (wifiPinModal) {
     wifiPinModal.setAttribute("aria-hidden", "false");
@@ -1386,12 +1681,12 @@ async function fetchWifiPass() {
 
   const pin = wifiPinInput?.value?.trim();
   if (!pin) {
-    showWifiError("Introduce el PIN.");
+    showWifiError(t("wifi_error_enter_pin"));
     return null;
   }
 
   if (!_wifiCtx.clienteId) {
-    showWifiError("No se pudo identificar el local.");
+    showWifiError(t("wifi_error_no_local"));
     return null;
   }
 
@@ -1405,7 +1700,7 @@ async function fetchWifiPass() {
   console.log("[wifi-pin] rpc result", { data, error, ctx: _wifiCtx });
 
   if (error) {
-    showWifiError("No se pudo verificar el PIN. Inténtalo de nuevo.");
+    showWifiError(t("wifi_error_verify"));
     return null;
   }
 
@@ -1414,12 +1709,12 @@ async function fetchWifiPass() {
   const pass = row?.wifi_pass;
 
   if (!pass) {
-    showWifiError("PIN incorrecto.");
+    showWifiError(t("wifi_error_wrong"));
     return null;
   }
 
   _wifiCtx.wifiPass = String(pass);
-  showWifiResult(`Clave: ${_wifiCtx.wifiPass}`);
+  showWifiResult(`${t("wifi_result_prefix")}${_wifiCtx.wifiPass}`);
   if (wifiPinCopy) wifiPinCopy.disabled = false;
   return _wifiCtx.wifiPass;
 }

@@ -4,17 +4,38 @@
     <div class="cover" id="cover">
       <img id="coverImg" alt="" />
       <div class="coverTop">
-        <button class="pill" id="langBtn" type="button" aria-label="Idioma">
-          <span id="langLabel">Español</span>
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M7 10l5 5 5-5" />
-          </svg>
-        </button>
+        <div class="langSelect">
+          <button
+            class="pill"
+            id="langBtn"
+            type="button"
+            aria-label="Idioma"
+            aria-haspopup="menu"
+            aria-expanded="false"
+            data-i18n="lang_button"
+            data-i18n-attr="aria-label"
+          >
+            <span id="langLabel" data-i18n="lang_label">Español</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M7 10l5 5 5-5" />
+            </svg>
+          </button>
+          <div class="langMenu" id="langMenu" role="menu" aria-hidden="true">
+            <button class="langOption" type="button" role="menuitem" data-lang="es">
+              Español
+            </button>
+            <button class="langOption" type="button" role="menuitem" data-lang="en">
+              English
+            </button>
+          </div>
+        </div>
         <button
           class="iconBtn"
           id="homeSearchBtn"
           type="button"
           aria-label="Buscar"
+          data-i18n="search"
+          data-i18n-attr="aria-label"
         >
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <path
@@ -28,7 +49,13 @@
     <div class="homeBody">
       <h1 class="placeTitle" id="placeTitle">Carta</h1>
 
-      <div class="categoryButtons" id="homeCategories" aria-label="Categorias"></div>
+      <div
+        class="categoryButtons"
+        id="homeCategories"
+        aria-label="Categorias"
+        data-i18n="categories"
+        data-i18n-attr="aria-label"
+      ></div>
 
       <div class="homeInfo" id="homeInfo">
         <button
@@ -36,6 +63,8 @@
           id="ratingBtn"
           type="button"
           aria-label="Valoracion"
+          data-i18n="ratings"
+          data-i18n-attr="aria-label"
           style="display: none"
         >
           <div class="rowIcon" aria-hidden="true">
@@ -57,6 +86,8 @@
           id="infoBtn"
           type="button"
           aria-label="Info"
+          data-i18n="info"
+          data-i18n-attr="aria-label"
           style="display: none"
         >
           <div class="rowIcon" aria-hidden="true">
@@ -67,8 +98,8 @@
             </svg>
           </div>
           <div class="rowText">
-            <div class="rowPrimary">Info</div>
-            <div class="rowSecondary" id="infoSecondary">
+            <div class="rowPrimary" data-i18n="info">Info</div>
+            <div class="rowSecondary" id="infoSecondary" data-i18n="info_secondary_default">
               Wi‑Fi, Teléfono y Dirección
             </div>
           </div>

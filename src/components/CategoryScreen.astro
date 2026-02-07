@@ -1,7 +1,14 @@
 <!-- CATEGORY VIEW (topbar + chips + lista de platos) -->
 <section class="screen screen--category" id="viewCategory" aria-hidden="true">
   <header class="topbar">
-    <button class="iconBtn" id="backBtn" type="button" aria-label="Volver">
+    <button
+      class="iconBtn"
+      id="backBtn"
+      type="button"
+      aria-label="Volver"
+      data-i18n="back"
+      data-i18n-attr="aria-label"
+    >
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <path d="M15 18 9 12l6-6" />
       </svg>
@@ -12,6 +19,8 @@
       id="catSearchBtn"
       type="button"
       aria-label="Buscar"
+      data-i18n="search"
+      data-i18n-attr="aria-label"
     >
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <path
@@ -22,12 +31,17 @@
   </header>
 
   <div class="listWrap">
-    <div class="chipsBar" aria-label="Subcategorias">
+    <div
+      class="chipsBar"
+      aria-label="Subcategorias"
+      data-i18n="subcategories"
+      data-i18n-attr="aria-label"
+    >
       <div class="chipsTrack" id="subcatChips"></div>
     </div>
 
     <main class="list" id="dishList" aria-live="polite">
-      <div class="loading">Cargando...</div>
+      <div class="loading" data-i18n="loading">Cargando...</div>
     </main>
   </div>
 </section>

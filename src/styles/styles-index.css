@@ -88,6 +88,35 @@ button:active,
   position:absolute; top:12px; right:12px; left:12px;
   display:flex; justify-content:flex-end; gap:10px;
 }
+.langSelect{position:relative}
+.langMenu{
+  position:absolute;
+  top:46px;
+  right:0;
+  min-width:140px;
+  background:rgba(0,0,0,.85);
+  color:#fff;
+  border-radius:14px;
+  padding:6px;
+  display:none;
+  box-shadow:0 12px 24px rgba(0,0,0,.25);
+  backdrop-filter:blur(6px);
+  z-index:5;
+}
+.langMenu.is-open{display:block}
+.langOption{
+  width:100%;
+  border:0;
+  background:transparent;
+  color:inherit;
+  text-align:left;
+  padding:8px 10px;
+  border-radius:10px;
+  font-weight:600;
+  cursor:pointer;
+}
+.langOption:hover{background:rgba(255,255,255,.12)}
+.langOption.is-active{background:rgba(255,255,255,.2)}
 
 .pill{
   border:0; background:rgba(0,0,0,.72);

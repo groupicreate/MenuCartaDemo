@@ -5,8 +5,17 @@
     type="button"
     data-close="true"
     aria-label="Cerrar"
+    data-i18n="close"
+    data-i18n-attr="aria-label"
   ></button>
-  <div class="sheetCard" role="dialog" aria-modal="true" aria-label="Detalle">
+  <div
+    class="sheetCard"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Detalle"
+    data-i18n="dish_details"
+    data-i18n-attr="aria-label"
+  >
     <div class="sheetHandle" aria-hidden="true"></div>
     <div class="sheetImage" id="sheetImageWrap" style="display: none">
       <img id="sheetImage" alt="" />
@@ -16,7 +25,7 @@
       <div class="sheetPrice" id="sheetPrice"></div>
       <div class="sheetDesc" id="sheetDesc"></div>
       <div class="sheetSection" id="sheetAllergenSection" style="display: none">
-        <div class="sheetSectionTitle">Alergenos</div>
+      <div class="sheetSectionTitle" data-i18n="allergens">Alergenos</div>
         <div class="sheetAllergens" id="sheetAllergens"></div>
       </div>
     </div>
@@ -30,23 +39,33 @@
     type="button"
     data-close="true"
     aria-label="Cerrar"
+    data-i18n="close"
+    data-i18n-attr="aria-label"
   ></button>
   <div
     class="sheetCard"
     role="dialog"
     aria-modal="true"
     aria-label="Valoraciones"
+    data-i18n="ratings"
+    data-i18n-attr="aria-label"
   >
     <div class="sheetHandle" aria-hidden="true"></div>
     <div class="sheetBody">
       <div class="sheetHeader">
-        <div class="sheetHeaderTitle">Valoraciones</div>
+        <div class="sheetHeaderTitle" data-i18n="ratings">Valoraciones</div>
       </div>
 
       <div class="ratingsTop">
         <div class="ratingBig">
           <div class="ratingValue" id="ratingsValue">-</div>
-          <div class="ratingStars" id="ratingsStars" aria-label="Estrellas"></div>
+          <div
+            class="ratingStars"
+            id="ratingsStars"
+            aria-label="Estrellas"
+            data-i18n="stars"
+            data-i18n-attr="aria-label"
+          ></div>
           <div class="ratingCount" id="ratingsCount"></div>
         </div>
         <div class="ratingBars" id="ratingsBars"></div>
@@ -73,8 +92,17 @@
     type="button"
     data-close="true"
     aria-label="Cerrar"
+    data-i18n="close"
+    data-i18n-attr="aria-label"
   ></button>
-  <div class="sheetCard" role="dialog" aria-modal="true" aria-label="Info">
+  <div
+    class="sheetCard"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Info"
+    data-i18n="info"
+    data-i18n-attr="aria-label"
+  >
     <div class="sheetHandle" aria-hidden="true"></div>
     <div class="sheetBody">
       <div class="sheetHeader">
@@ -87,6 +115,8 @@
           title="Mapa"
           loading="lazy"
           referrerpolicy="no-referrer-when-downgrade"
+          data-i18n="map"
+          data-i18n-attr="title"
         ></iframe>
       </div>
 
@@ -102,13 +132,29 @@
     id="allergenZoomBackdrop"
     type="button"
     aria-label="Cerrar"
+    data-i18n="close"
+    data-i18n-attr="aria-label"
   ></button>
-  <div class="zoomCard" role="dialog" aria-modal="true" aria-label="Alérgeno">
-    <button class="zoomClose" id="allergenZoomClose" type="button" aria-label="Cerrar">
+  <div
+    class="zoomCard"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Alérgeno"
+    data-i18n="allergen"
+    data-i18n-attr="aria-label"
+  >
+    <button
+      class="zoomClose"
+      id="allergenZoomClose"
+      type="button"
+      aria-label="Cerrar"
+      data-i18n="close"
+      data-i18n-attr="aria-label"
+    >
       ✖
     </button>
     <div class="zoomInner">
-      <img id="allergenZoomImg" alt="Alérgeno" />
+      <img id="allergenZoomImg" alt="Alérgeno" data-i18n="allergen" data-i18n-attr="alt" />
       <div class="zoomTitle" id="allergenZoomTitle"></div>
     </div>
   </div>
@@ -121,13 +167,24 @@
     id="wifiPinBackdrop"
     type="button"
     aria-label="Cerrar"
+    data-i18n="close"
+    data-i18n-attr="aria-label"
   ></button>
   <div class="zoomCard" role="dialog" aria-modal="true" aria-label="Wi‑Fi">
-    <button class="zoomClose" id="wifiPinClose" type="button" aria-label="Cerrar">
+    <button
+      class="zoomClose"
+      id="wifiPinClose"
+      type="button"
+      aria-label="Cerrar"
+      data-i18n="close"
+      data-i18n-attr="aria-label"
+    >
       ✖
     </button>
     <div class="zoomInner" style="gap: 12px">
-      <div class="zoomTitle" style="margin-bottom: 4px">Wi‑Fi</div>
+      <div class="zoomTitle" style="margin-bottom: 4px" data-i18n="wifi_title">
+        Wi‑Fi
+      </div>
       <div id="wifiPinSsid" style="opacity: 0.9"></div>
 
       <label
@@ -138,13 +195,15 @@
           opacity: 0.9;
         "
       >
-        Introduce el PIN
+        <span data-i18n="wifi_prompt">Introduce el PIN</span>
         <input
           id="wifiPinInput"
           type="password"
           inputmode="numeric"
           placeholder="PIN"
           autocomplete="one-time-code"
+          data-i18n="wifi_pin_placeholder"
+          data-i18n-attr="placeholder"
           style="
             margin-top: 8px;
             width: 100%;
@@ -166,6 +225,7 @@
         <button
           id="wifiPinSubmit"
           type="button"
+          data-i18n="wifi_show_key"
           style="
             flex: 1;
             padding: 12px 14px;
@@ -179,6 +239,7 @@
         <button
           id="wifiPinCopy"
           type="button"
+          data-i18n="wifi_copy_key"
           style="
             flex: 1;
             padding: 12px 14px;

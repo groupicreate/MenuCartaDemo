@@ -5,6 +5,8 @@
     role="dialog"
     aria-modal="true"
     aria-label="Buscar"
+    data-i18n="search"
+    data-i18n-attr="aria-label"
   >
     <div class="searchField">
       <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -17,8 +19,17 @@
         type="search"
         placeholder="Buscar"
         autocomplete="off"
+        data-i18n="search"
+        data-i18n-attr="placeholder"
       />
-      <button class="iconBtn" id="clearSearch" type="button" aria-label="Borrar">
+      <button
+        class="iconBtn"
+        id="clearSearch"
+        type="button"
+        aria-label="Borrar"
+        data-i18n="clear"
+        data-i18n-attr="aria-label"
+      >
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path d="M6 6l12 12M18 6l-12 12" />
         </svg>
@@ -29,13 +40,19 @@
       id="searchDropdown"
       role="listbox"
       aria-label="Resultados"
+      data-i18n="results"
+      data-i18n-attr="aria-label"
     ></div>
-    <button class="ghostBtn" id="closeSearch" type="button">Cerrar</button>
+    <button class="ghostBtn" id="closeSearch" type="button" data-i18n="close">
+      Cerrar
+    </button>
   </div>
   <button
     class="overlayBackdrop"
     type="button"
     id="searchBackdrop"
     aria-label="Cerrar"
+    data-i18n="close"
+    data-i18n-attr="aria-label"
   ></button>
 </div>
