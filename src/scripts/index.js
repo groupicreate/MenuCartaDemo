@@ -460,18 +460,21 @@ function applyPublicTheme(primaryColor, intensity = DEFAULT_THEME_INTENSITY) {
   const accentInk = bestTextColor(accentOnLight);
   const intensityMap = {
     suave: {
+      frameWidth: "1px",
       frameAlpha: 0.2,
       frameShadow: 0.08,
       iconBg: 0.12,
       iconBorder: 0.2,
     },
     medio: {
+      frameWidth: "2.5px",
       frameAlpha: 0.3,
       frameShadow: 0.12,
       iconBg: 0.18,
       iconBorder: 0.28,
     },
     vivo: {
+      frameWidth: "4px",
       frameAlpha: 0.42,
       frameShadow: 0.16,
       iconBg: 0.24,
@@ -489,8 +492,8 @@ function applyPublicTheme(primaryColor, intensity = DEFAULT_THEME_INTENSITY) {
     "--surface-press": "#f2f2f5",
     "--line": "#e6e6e9",
     "--chip": "#f3f3f5",
-    "--chipActive": "#1f1f1f",
-    "--chipActiveText": "#ffffff",
+    "--chipActive": accentOnLight,
+    "--chipActiveText": bestTextColor(accentOnLight),
     "--accent": accentOnLight,
     "--accent-strong": mixHex(accentOnLight, "#FFFFFF", 0.18),
     "--accent-ink": accentInk,
@@ -498,6 +501,7 @@ function applyPublicTheme(primaryColor, intensity = DEFAULT_THEME_INTENSITY) {
     "--accent-on-dark": accentOnDark,
     "--accent-soft": toRgba(accentOnLight, cfg.iconBg),
     "--accent-shadow": toRgba(accentOnDark, 0.24),
+    "--frame-width": cfg.frameWidth,
     "--frame-border": toRgba(accentOnLight, cfg.frameAlpha),
     "--frame-shadow": toRgba(accentOnLight, cfg.frameShadow),
     "--home-icon-bg": toRgba(accentOnLight, cfg.iconBg),
