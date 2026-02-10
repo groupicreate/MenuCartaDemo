@@ -104,18 +104,12 @@ let CURRENT_LANG = "es";
 // Perfil (opcional): si existe tabla "Perfiles" o "Perfil", la usamos.
 let PROFILE = null;
 const DEFAULT_PRIMARY_COLOR = "#FFE800";
-const DEFAULT_THEME_INTENSITY = "suave";
 const PROFILE_PRIMARY_COLOR_KEYS = [
   "color_principal",
   "primary_color",
   "brand_color",
   "accent_color",
   "color",
-];
-const PROFILE_THEME_INTENSITY_KEYS = [
-  "intensidad_tema",
-  "theme_intensity",
-  "intensidad",
 ];
 
 // =============================
@@ -368,16 +362,6 @@ function pick(obj, keys) {
   return null;
 }
 
-function normalizeThemeIntensity(value) {
-  const raw = safeText(value).trim().toLowerCase();
-  if (raw === "suave" || raw === "medio" || raw === "vivo") return raw;
-  if (raw.startsWith("sua")) return "suave";
-  if (raw.startsWith("med")) return "medio";
-  if (raw.startsWith("viv") || raw === "fuerte" || raw === "intenso")
-    return "vivo";
-  return null;
-}
-
 function normalizeHexColor(value) {
   const raw = safeText(value).trim();
   if (!raw) return null;
@@ -456,42 +440,20 @@ function bestTextColor(backgroundHex) {
   return darkContrast >= lightContrast ? "#121212" : "#FFFFFF";
 }
 
-function applyPublicTheme(primaryColor, intensity = DEFAULT_THEME_INTENSITY) {
+function applyPublicTheme(primaryColor) {
   const accent = normalizeHexColor(primaryColor) || DEFAULT_PRIMARY_COLOR;
-  const level = normalizeThemeIntensity(intensity) || DEFAULT_THEME_INTENSITY;
   const accentOnLight = ensureContrast(accent, "#FFFFFF", 2.2);
   const accentOnDark = ensureContrast(accent, "#1F1F1F", 3.2);
   const accentInk = bestTextColor(accentOnLight);
-  const intensityMap = {
-    suave: {
-      frameWidth: "2px",
-      frameAlpha: 0.34,
-      frameShadow: 0.12,
-      frameRingWidth: "2px",
-      frameRingAlpha: 0.08,
-      iconBg: 0.14,
-      iconBorder: 0.24,
-    },
-    medio: {
-      frameWidth: "4px",
-      frameAlpha: 0.58,
-      frameShadow: 0.18,
-      frameRingWidth: "6px",
-      frameRingAlpha: 0.18,
-      iconBg: 0.22,
-      iconBorder: 0.34,
-    },
-    vivo: {
-      frameWidth: "7px",
-      frameAlpha: 0.82,
-      frameShadow: 0.28,
-      frameRingWidth: "12px",
-      frameRingAlpha: 0.3,
-      iconBg: 0.3,
-      iconBorder: 0.5,
-    },
+  const cfg = {
+    frameWidth: "2px",
+    frameAlpha: 0.34,
+    frameShadow: 0.12,
+    frameRingWidth: "2px",
+    frameRingAlpha: 0.08,
+    iconBg: 0.14,
+    iconBorder: 0.24,
   };
-  const cfg = intensityMap[level];
   const theme = {
     "--bg": "#efeff2",
     "--bg-soft-1": "rgba(31,31,31,.05)",
@@ -1382,7 +1344,7 @@ async function loadProfileIfExists() {
 
 function applyProfileToHome() {
   if (!PROFILE) {
-    applyPublicTheme(DEFAULT_PRIMARY_COLOR, DEFAULT_THEME_INTENSITY);
+    applyPublicTheme(DEFAULT_PRIMARY_COLOR);
     // Fallback: si no hay portada, ponemos un degradado para no quedar feo
     coverImg.style.display = "none";
     cover.style.background = "var(--cover-gradient)";
@@ -1392,7 +1354,6 @@ function applyProfileToHome() {
 
   applyPublicTheme(
     pick(PROFILE, PROFILE_PRIMARY_COLOR_KEYS) || DEFAULT_PRIMARY_COLOR,
-    pick(PROFILE, PROFILE_THEME_INTENSITY_KEYS) || DEFAULT_THEME_INTENSITY,
   );
 
   const name = pick(PROFILE, [
@@ -1795,7 +1756,7 @@ document.addEventListener("keydown", (e) => {
 // =============================
 // Init
 // =============================
-applyPublicTheme(DEFAULT_PRIMARY_COLOR, DEFAULT_THEME_INTENSITY);
+applyPublicTheme(DEFAULT_PRIMARY_COLOR);
 initLang();
 loadMenu();
 

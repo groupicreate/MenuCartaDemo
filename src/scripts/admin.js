@@ -9,20 +9,13 @@ const db = supabase.schema("iMenu");
 // Bucket recomendado para imágenes (Supabase Storage)
 const STORAGE_BUCKET = "imenu";
 const DEFAULT_PRIMARY_COLOR = "#FFE800";
-const DEFAULT_THEME_INTENSITY = "suave";
 const ADMIN_THEME_STORAGE_KEY = "imenu.admin.primary_color";
-const ADMIN_INTENSITY_STORAGE_KEY = "imenu.admin.theme_intensity";
 const PROFILE_PRIMARY_COLOR_KEYS = [
   "color_principal",
   "primary_color",
   "brand_color",
   "accent_color",
   "color",
-];
-const PROFILE_THEME_INTENSITY_KEYS = [
-  "intensidad_tema",
-  "theme_intensity",
-  "intensidad",
 ];
 
 let user = null;
@@ -86,7 +79,6 @@ const perfilColorPrincipal = document.getElementById("perfilColorPrincipal");
 const perfilColorPrincipalLabel = document.getElementById(
   "perfilColorPrincipalLabel",
 );
-const perfilTemaIntensidad = document.getElementById("perfilTemaIntensidad");
 const colorSwatches = Array.from(
   document.querySelectorAll(".color-swatch[data-color]"),
 );
@@ -138,16 +130,6 @@ function pickFirst(obj, keys) {
     const value = obj?.[key];
     if (value != null && value !== "") return value;
   }
-  return null;
-}
-
-function normalizeThemeIntensity(value) {
-  const raw = safeText(value).trim().toLowerCase();
-  if (raw === "suave" || raw === "medio" || raw === "vivo") return raw;
-  if (raw.startsWith("sua")) return "suave";
-  if (raw.startsWith("med")) return "medio";
-  if (raw.startsWith("viv") || raw === "fuerte" || raw === "intenso")
-    return "vivo";
   return null;
 }
 
@@ -231,10 +213,6 @@ let activePrimaryColor = normalizeHexColor(
   localStorage.getItem(ADMIN_THEME_STORAGE_KEY),
 );
 if (!activePrimaryColor) activePrimaryColor = DEFAULT_PRIMARY_COLOR;
-let activeThemeIntensity = normalizeThemeIntensity(
-  localStorage.getItem(ADMIN_INTENSITY_STORAGE_KEY),
-);
-if (!activeThemeIntensity) activeThemeIntensity = DEFAULT_THEME_INTENSITY;
 
 function markActiveSwatches(colorHex) {
   const normalized = normalizeHexColor(colorHex) || DEFAULT_PRIMARY_COLOR;
@@ -251,18 +229,6 @@ function markActiveSwatches(colorHex) {
   if (perfilColorPrincipalLabel) {
     perfilColorPrincipalLabel.textContent = normalized;
   }
-}
-
-function setThemeIntensity(value, { persist = true } = {}) {
-  const normalized = normalizeThemeIntensity(value) || DEFAULT_THEME_INTENSITY;
-  activeThemeIntensity = normalized;
-  if (perfilTemaIntensidad) {
-    perfilTemaIntensidad.value = normalized;
-  }
-  if (persist) {
-    localStorage.setItem(ADMIN_INTENSITY_STORAGE_KEY, normalized);
-  }
-  return normalized;
 }
 
 function applyAdminTheme(color, { persist = true } = {}) {
@@ -309,15 +275,6 @@ function getCurrentPrimaryColor() {
     normalizeHexColor(activePrimaryColor) ||
     normalizeHexColor(localStorage.getItem(ADMIN_THEME_STORAGE_KEY)) ||
     DEFAULT_PRIMARY_COLOR
-  );
-}
-
-function getCurrentThemeIntensity() {
-  return (
-    normalizeThemeIntensity(perfilTemaIntensidad?.value) ||
-    normalizeThemeIntensity(activeThemeIntensity) ||
-    normalizeThemeIntensity(localStorage.getItem(ADMIN_INTENSITY_STORAGE_KEY)) ||
-    DEFAULT_THEME_INTENSITY
   );
 }
 
@@ -450,11 +407,6 @@ perfilColorPrincipal?.addEventListener("input", (event) => {
   applyAdminTheme(event.target?.value);
 });
 
-perfilTemaIntensidad?.addEventListener("change", (event) => {
-  setThemeIntensity(event.target?.value);
-});
-
-setThemeIntensity(activeThemeIntensity, { persist: false });
 applyAdminTheme(activePrimaryColor, { persist: false });
 
 // ========== LOGIN ==========
@@ -554,13 +506,6 @@ async function cargarPerfil() {
     } else {
       markActiveSwatches(getCurrentPrimaryColor());
     }
-
-    const perfilThemeIntensity = pickFirst(data, PROFILE_THEME_INTENSITY_KEYS);
-    if (perfilThemeIntensity) {
-      setThemeIntensity(perfilThemeIntensity, { persist: true });
-    } else {
-      setThemeIntensity(getCurrentThemeIntensity(), { persist: false });
-    }
   }
 }
 
@@ -579,7 +524,6 @@ document.getElementById("guardarPerfilBtn").onclick = async () => {
   try {
     const currentUser = await requireUser();
     const primaryColor = getCurrentPrimaryColor();
-    const themeIntensity = getCurrentThemeIntensity();
     let portadaFinal = perfilPortadaUrl.value.trim();
     const f = perfilPortadaFile.files?.[0];
     if (f) {
@@ -628,8 +572,7 @@ document.getElementById("guardarPerfilBtn").onclick = async () => {
         msg.includes("color") ||
         msg.includes("accent") ||
         msg.includes("brand") ||
-        msg.includes("theme") ||
-        msg.includes("intens");
+        msg.includes("theme");
       return isMissingCol && mentionsBranding;
     };
 
@@ -648,24 +591,9 @@ document.getElementById("guardarPerfilBtn").onclick = async () => {
       };
 
       for (const colorKey of PROFILE_PRIMARY_COLOR_KEYS) {
-        for (const intensityKey of PROFILE_THEME_INTENSITY_KEYS) {
-          addCandidate({
-            ...basePayload,
-            [colorKey]: primaryColor || null,
-            [intensityKey]: themeIntensity,
-          });
-        }
-      }
-      for (const colorKey of PROFILE_PRIMARY_COLOR_KEYS) {
         addCandidate({
           ...basePayload,
           [colorKey]: primaryColor || null,
-        });
-      }
-      for (const intensityKey of PROFILE_THEME_INTENSITY_KEYS) {
-        addCandidate({
-          ...basePayload,
-          [intensityKey]: themeIntensity,
         });
       }
       return candidates;
@@ -693,7 +621,7 @@ document.getElementById("guardarPerfilBtn").onclick = async () => {
       error = fallbackErr || null;
     } else if (!brandingSaved && isBrandingColumnError(error)) {
       console.warn(
-        "Perfil sin columnas de branding compatibles (color/intensidad). Guardando sin branding persistente.",
+        "Perfil sin columnas de branding compatibles (color). Guardando sin branding persistente.",
         error.message,
       );
       const { error: fallbackErr } = await upsertPerfil(payload);
