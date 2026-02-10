@@ -117,6 +117,27 @@ button:active,
   position:absolute; top:12px; right:12px; left:12px;
   display:flex; justify-content:flex-end; gap:10px;
 }
+.coverLogo{
+  position:absolute;
+  left:14px;
+  bottom:14px;
+  width:clamp(62px, 18vw, 104px);
+  aspect-ratio:1 / 1;
+  border-radius:14px;
+  border:var(--frame-width) solid var(--frame-border);
+  background:rgba(255,255,255,.82);
+  overflow:hidden;
+  box-shadow:
+    0 0 0 calc(var(--frame-ring-width) * .45) var(--frame-ring),
+    0 0 0 1px var(--frame-shadow) inset;
+}
+.coverLogo img{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  display:block;
+  padding:6px;
+}
 .langSelect{position:relative}
 .langMenu{
   position:absolute;

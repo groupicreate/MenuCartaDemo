@@ -24,6 +24,13 @@ const PROFILE_DISH_PLACEHOLDER_KEYS = [
   "default_dish_image_url",
   "dish_placeholder_url",
 ];
+const PROFILE_LOGO_KEYS = [
+  "logo_url",
+  "emblema_url",
+  "brand_logo_url",
+  "logo",
+  "emblema",
+];
 
 let user = null;
 
@@ -80,6 +87,9 @@ const perfilReviews = document.getElementById("perfilReviews");
 const perfilPortadaUrl = document.getElementById("perfilPortadaUrl");
 const perfilPortadaFile = document.getElementById("perfilPortadaFile");
 const perfilPortadaPreview = document.getElementById("perfilPortadaPreview");
+const perfilLogoUrl = document.getElementById("perfilLogoUrl");
+const perfilLogoFile = document.getElementById("perfilLogoFile");
+const perfilLogoPreview = document.getElementById("perfilLogoPreview");
 const perfilPlatoDefaultUrl = document.getElementById("perfilPlatoDefaultUrl");
 const perfilPlatoDefaultFile = document.getElementById("perfilPlatoDefaultFile");
 const perfilPlatoDefaultPreview = document.getElementById(
@@ -511,6 +521,9 @@ async function cargarPerfil() {
     perfilPortadaUrl.value = safeText(data.portada_url);
     perfilGooglePlaceId.value = safeText(data.google_place_id);
     showPreview(perfilPortadaPreview, data.portada_url);
+    const logoUrl = safeText(pickFirst(data, PROFILE_LOGO_KEYS));
+    if (perfilLogoUrl) perfilLogoUrl.value = logoUrl;
+    showPreview(perfilLogoPreview, logoUrl);
     const platoDefaultUrl = safeText(
       pickFirst(data, PROFILE_DISH_PLACEHOLDER_KEYS),
     );
@@ -537,6 +550,17 @@ perfilPortadaFile?.addEventListener("change", () => {
   showPreview(perfilPortadaPreview, blob);
 });
 
+perfilLogoUrl?.addEventListener("input", () => {
+  showPreview(perfilLogoPreview, perfilLogoUrl.value.trim());
+});
+
+perfilLogoFile?.addEventListener("change", () => {
+  const f = perfilLogoFile.files?.[0];
+  if (!f) return;
+  const blob = URL.createObjectURL(f);
+  showPreview(perfilLogoPreview, blob);
+});
+
 perfilPlatoDefaultUrl?.addEventListener("input", () => {
   showPreview(perfilPlatoDefaultPreview, perfilPlatoDefaultUrl.value.trim());
 });
@@ -553,6 +577,7 @@ document.getElementById("guardarPerfilBtn").onclick = async () => {
     const currentUser = await requireUser();
     const primaryColor = getCurrentPrimaryColor();
     let portadaFinal = perfilPortadaUrl.value.trim();
+    let logoFinal = perfilLogoUrl?.value.trim() || "";
     let platoDefaultFinal = perfilPlatoDefaultUrl?.value.trim() || "";
     const f = perfilPortadaFile.files?.[0];
     if (f) {
@@ -560,6 +585,13 @@ document.getElementById("guardarPerfilBtn").onclick = async () => {
       perfilPortadaUrl.value = portadaFinal;
       perfilPortadaFile.value = "";
       showPreview(perfilPortadaPreview, portadaFinal);
+    }
+    const logoFile = perfilLogoFile?.files?.[0];
+    if (logoFile) {
+      logoFinal = await uploadToStorage(logoFile, "logos");
+      if (perfilLogoUrl) perfilLogoUrl.value = logoFinal;
+      if (perfilLogoFile) perfilLogoFile.value = "";
+      showPreview(perfilLogoPreview, logoFinal);
     }
     const platoDefaultFile = perfilPlatoDefaultFile?.files?.[0];
     if (platoDefaultFile) {
@@ -598,6 +630,7 @@ document.getElementById("guardarPerfilBtn").onclick = async () => {
         : db.from("Perfil").insert(writePayload);
 
     const platoDefaultValue = platoDefaultFinal || null;
+    const logoValue = logoFinal || null;
     const isOptionalProfileColumnError = (err) => {
       const msg = safeText(err?.message).toLowerCase();
       const isMissingCol =
@@ -615,6 +648,9 @@ document.getElementById("guardarPerfilBtn").onclick = async () => {
         msg.includes("imagen") ||
         msg.includes("image") ||
         msg.includes("foto") ||
+        msg.includes("logo") ||
+        msg.includes("emblema") ||
+        msg.includes("emblem") ||
         msg.includes("placeholder") ||
         msg.includes("fallback") ||
         msg.includes("default");
@@ -641,7 +677,31 @@ document.getElementById("guardarPerfilBtn").onclick = async () => {
       const dishPatches = PROFILE_DISH_PLACEHOLDER_KEYS.map((dishKey) => ({
         [dishKey]: platoDefaultValue,
       }));
+      const logoPatches = PROFILE_LOGO_KEYS.map((logoKey) => ({
+        [logoKey]: logoValue,
+      }));
 
+      for (const colorPatch of colorPatches) {
+        for (const dishPatch of dishPatches) {
+          for (const logoPatch of logoPatches) {
+            addCandidate({
+              ...basePayload,
+              ...colorPatch,
+              ...dishPatch,
+              ...logoPatch,
+            });
+          }
+        }
+      }
+      for (const colorPatch of colorPatches) {
+        for (const logoPatch of logoPatches) {
+          addCandidate({
+            ...basePayload,
+            ...colorPatch,
+            ...logoPatch,
+          });
+        }
+      }
       for (const colorPatch of colorPatches) {
         for (const dishPatch of dishPatches) {
           addCandidate({
@@ -655,6 +715,12 @@ document.getElementById("guardarPerfilBtn").onclick = async () => {
         addCandidate({
           ...basePayload,
           ...colorPatch,
+        });
+      }
+      for (const logoPatch of logoPatches) {
+        addCandidate({
+          ...basePayload,
+          ...logoPatch,
         });
       }
       for (const dishPatch of dishPatches) {

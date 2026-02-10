@@ -33,6 +33,8 @@ const viewCategory = document.getElementById("viewCategory");
 
 const cover = document.getElementById("cover");
 const coverImg = document.getElementById("coverImg");
+const coverLogoWrap = document.getElementById("coverLogoWrap");
+const coverLogo = document.getElementById("coverLogo");
 const placeTitle = document.getElementById("placeTitle");
 const homeCategories = document.getElementById("homeCategories");
 const langBtn = document.getElementById("langBtn");
@@ -117,6 +119,13 @@ const PROFILE_DISH_PLACEHOLDER_KEYS = [
   "imagen_plato_fallback_url",
   "default_dish_image_url",
   "dish_placeholder_url",
+];
+const PROFILE_LOGO_KEYS = [
+  "logo_url",
+  "emblema_url",
+  "brand_logo_url",
+  "logo",
+  "emblema",
 ];
 const DISH_IMAGE_KEYS = ["imagen_url", "image_url", "foto_url", "img_url"];
 
@@ -374,6 +383,10 @@ function getProfileDishPlaceholderUrl() {
   return normalizeOptionalUrl(pick(PROFILE, PROFILE_DISH_PLACEHOLDER_KEYS));
 }
 
+function getProfileLogoUrl() {
+  return normalizeOptionalUrl(pick(PROFILE, PROFILE_LOGO_KEYS));
+}
+
 function getDishImageInfo(plato) {
   const primary = normalizeOptionalUrl(pick(plato, DISH_IMAGE_KEYS));
   const fallback = getProfileDishPlaceholderUrl();
@@ -381,6 +394,23 @@ function getDishImageInfo(plato) {
     primary,
     fallback,
     preferred: primary || fallback,
+  };
+}
+
+function setCoverLogo(url, altText = "") {
+  if (!coverLogoWrap || !coverLogo) return;
+  const normalized = normalizeOptionalUrl(url);
+  if (!normalized) {
+    coverLogoWrap.style.display = "none";
+    coverLogo.removeAttribute("src");
+    return;
+  }
+  coverLogoWrap.style.display = "";
+  coverLogo.src = normalized;
+  coverLogo.alt = altText;
+  coverLogo.onerror = () => {
+    coverLogoWrap.style.display = "none";
+    coverLogo.removeAttribute("src");
   };
 }
 
@@ -1388,6 +1418,7 @@ function applyProfileToHome() {
     // Fallback: si no hay portada, ponemos un degradado para no quedar feo
     coverImg.style.display = "none";
     cover.style.background = "var(--cover-gradient)";
+    setCoverLogo("");
     placeTitle.textContent = t("home_title_default");
     return;
   }
@@ -1404,6 +1435,7 @@ function applyProfileToHome() {
     "titulo",
   ]);
   if (name) placeTitle.textContent = name;
+  setCoverLogo(getProfileLogoUrl(), name ? `${name} logo` : "");
 
   const portada = pick(PROFILE, [
     "portada_url",

@@ -229,6 +229,29 @@
 
         <div class="grid-2">
           <div class="field">
+            <label>Logo / emblema (URL)</label>
+            <input id="perfilLogoUrl" placeholder="https://..." />
+            <small class="hint">
+              Se muestra sobre la portada en la carta pública.
+            </small>
+          </div>
+          <div class="field">
+            <label>Logo / emblema (subir imagen)</label>
+            <input id="perfilLogoFile" type="file" accept="image/*" />
+            <small class="hint">
+              Si no hay logo, simplemente no se muestra.
+            </small>
+          </div>
+        </div>
+
+        <div
+          id="perfilLogoPreview"
+          class="image-preview"
+          style="display: none"
+        ></div>
+
+        <div class="grid-2">
+          <div class="field">
             <label>Imagen por defecto de platos (URL)</label>
             <input id="perfilPlatoDefaultUrl" placeholder="https://..." />
             <small class="hint">
