@@ -17,6 +17,13 @@ const PROFILE_PRIMARY_COLOR_KEYS = [
   "accent_color",
   "color",
 ];
+const PROFILE_DISH_PLACEHOLDER_KEYS = [
+  "plato_imagen_default_url",
+  "imagen_plato_default_url",
+  "imagen_plato_fallback_url",
+  "default_dish_image_url",
+  "dish_placeholder_url",
+];
 
 let user = null;
 
@@ -73,6 +80,11 @@ const perfilReviews = document.getElementById("perfilReviews");
 const perfilPortadaUrl = document.getElementById("perfilPortadaUrl");
 const perfilPortadaFile = document.getElementById("perfilPortadaFile");
 const perfilPortadaPreview = document.getElementById("perfilPortadaPreview");
+const perfilPlatoDefaultUrl = document.getElementById("perfilPlatoDefaultUrl");
+const perfilPlatoDefaultFile = document.getElementById("perfilPlatoDefaultFile");
+const perfilPlatoDefaultPreview = document.getElementById(
+  "perfilPlatoDefaultPreview",
+);
 const perfilGooglePlaceId = document.getElementById("perfilGooglePlaceId");
 const buscarPlaceIdBtn = document.getElementById("buscarPlaceIdBtn");
 const perfilColorPrincipal = document.getElementById("perfilColorPrincipal");
@@ -499,6 +511,11 @@ async function cargarPerfil() {
     perfilPortadaUrl.value = safeText(data.portada_url);
     perfilGooglePlaceId.value = safeText(data.google_place_id);
     showPreview(perfilPortadaPreview, data.portada_url);
+    const platoDefaultUrl = safeText(
+      pickFirst(data, PROFILE_DISH_PLACEHOLDER_KEYS),
+    );
+    if (perfilPlatoDefaultUrl) perfilPlatoDefaultUrl.value = platoDefaultUrl;
+    showPreview(perfilPlatoDefaultPreview, platoDefaultUrl);
 
     const perfilPrimaryColor = pickFirst(data, PROFILE_PRIMARY_COLOR_KEYS);
     if (perfilPrimaryColor) {
@@ -520,17 +537,36 @@ perfilPortadaFile?.addEventListener("change", () => {
   showPreview(perfilPortadaPreview, blob);
 });
 
+perfilPlatoDefaultUrl?.addEventListener("input", () => {
+  showPreview(perfilPlatoDefaultPreview, perfilPlatoDefaultUrl.value.trim());
+});
+
+perfilPlatoDefaultFile?.addEventListener("change", () => {
+  const f = perfilPlatoDefaultFile.files?.[0];
+  if (!f) return;
+  const blob = URL.createObjectURL(f);
+  showPreview(perfilPlatoDefaultPreview, blob);
+});
+
 document.getElementById("guardarPerfilBtn").onclick = async () => {
   try {
     const currentUser = await requireUser();
     const primaryColor = getCurrentPrimaryColor();
     let portadaFinal = perfilPortadaUrl.value.trim();
+    let platoDefaultFinal = perfilPlatoDefaultUrl?.value.trim() || "";
     const f = perfilPortadaFile.files?.[0];
     if (f) {
       portadaFinal = await uploadToStorage(f, "portadas");
       perfilPortadaUrl.value = portadaFinal;
       perfilPortadaFile.value = "";
       showPreview(perfilPortadaPreview, portadaFinal);
+    }
+    const platoDefaultFile = perfilPlatoDefaultFile?.files?.[0];
+    if (platoDefaultFile) {
+      platoDefaultFinal = await uploadToStorage(platoDefaultFile, "platos-default");
+      if (perfilPlatoDefaultUrl) perfilPlatoDefaultUrl.value = platoDefaultFinal;
+      if (perfilPlatoDefaultFile) perfilPlatoDefaultFile.value = "";
+      showPreview(perfilPlatoDefaultPreview, platoDefaultFinal);
     }
 
     const payload = {
@@ -561,7 +597,8 @@ document.getElementById("guardarPerfilBtn").onclick = async () => {
         ? db.from("Perfil").update(writePayload).eq("user_id", currentUser.id)
         : db.from("Perfil").insert(writePayload);
 
-    const isBrandingColumnError = (err) => {
+    const platoDefaultValue = platoDefaultFinal || null;
+    const isOptionalProfileColumnError = (err) => {
       const msg = safeText(err?.message).toLowerCase();
       const isMissingCol =
         msg.includes("column") ||
@@ -572,11 +609,19 @@ document.getElementById("guardarPerfilBtn").onclick = async () => {
         msg.includes("color") ||
         msg.includes("accent") ||
         msg.includes("brand") ||
-        msg.includes("theme");
+        msg.includes("theme") ||
+        msg.includes("plato") ||
+        msg.includes("dish") ||
+        msg.includes("imagen") ||
+        msg.includes("image") ||
+        msg.includes("foto") ||
+        msg.includes("placeholder") ||
+        msg.includes("fallback") ||
+        msg.includes("default");
       return isMissingCol && mentionsBranding;
     };
 
-    const buildBrandingCandidates = (basePayload) => {
+    const buildProfileOptionalCandidates = (basePayload) => {
       const candidates = [];
       const seen = new Set();
       const addCandidate = (candidatePayload) => {
@@ -590,38 +635,60 @@ document.getElementById("guardarPerfilBtn").onclick = async () => {
         candidates.push(candidatePayload);
       };
 
-      for (const colorKey of PROFILE_PRIMARY_COLOR_KEYS) {
+      const colorPatches = PROFILE_PRIMARY_COLOR_KEYS.map((colorKey) => ({
+        [colorKey]: primaryColor || null,
+      }));
+      const dishPatches = PROFILE_DISH_PLACEHOLDER_KEYS.map((dishKey) => ({
+        [dishKey]: platoDefaultValue,
+      }));
+
+      for (const colorPatch of colorPatches) {
+        for (const dishPatch of dishPatches) {
+          addCandidate({
+            ...basePayload,
+            ...colorPatch,
+            ...dishPatch,
+          });
+        }
+      }
+      for (const colorPatch of colorPatches) {
         addCandidate({
           ...basePayload,
-          [colorKey]: primaryColor || null,
+          ...colorPatch,
+        });
+      }
+      for (const dishPatch of dishPatches) {
+        addCandidate({
+          ...basePayload,
+          ...dishPatch,
         });
       }
       return candidates;
     };
 
     let error = null;
-    let brandingSaved = false;
-    for (const brandingPayload of buildBrandingCandidates(payload)) {
-      const { error: brandingErr } = await upsertPerfil(brandingPayload);
-      if (!brandingErr) {
-        brandingSaved = true;
+    let optionalSaved = false;
+    for (const optionalPayload of buildProfileOptionalCandidates(payload)) {
+      const { error: optionalErr } = await upsertPerfil(optionalPayload);
+      if (!optionalErr) {
+        optionalSaved = true;
         error = null;
         break;
       }
 
-      if (!isBrandingColumnError(brandingErr)) {
-        error = brandingErr;
+      if (!isOptionalProfileColumnError(optionalErr)) {
+        error = optionalErr;
         break;
       }
-      error = brandingErr;
+      error = optionalErr;
     }
 
-    if (!brandingSaved && !error) {
+    if (!optionalSaved && !error) {
       const { error: fallbackErr } = await upsertPerfil(payload);
       error = fallbackErr || null;
-    } else if (!brandingSaved && isBrandingColumnError(error)) {
+    } else if (!optionalSaved && isOptionalProfileColumnError(error)) {
       console.warn(
-        "Perfil sin columnas de branding compatibles (color). Guardando sin branding persistente.",
+        "Perfil sin columnas opcionales compatibles (branding / imagen por defecto de platos). Guardando perfil base.",
         error.message,
       );
       const { error: fallbackErr } = await upsertPerfil(payload);

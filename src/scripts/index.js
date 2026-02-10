@@ -111,6 +111,14 @@ const PROFILE_PRIMARY_COLOR_KEYS = [
   "accent_color",
   "color",
 ];
+const PROFILE_DISH_PLACEHOLDER_KEYS = [
+  "plato_imagen_default_url",
+  "imagen_plato_default_url",
+  "imagen_plato_fallback_url",
+  "default_dish_image_url",
+  "dish_placeholder_url",
+];
+const DISH_IMAGE_KEYS = ["imagen_url", "image_url", "foto_url", "img_url"];
 
 // =============================
 // Utils
@@ -360,6 +368,15 @@ function pick(obj, keys) {
     if (obj && obj[k] != null && obj[k] !== "") return obj[k];
   }
   return null;
+}
+
+function getProfileDishPlaceholderUrl() {
+  return safeText(pick(PROFILE, PROFILE_DISH_PLACEHOLDER_KEYS)).trim();
+}
+
+function getDishImageUrl(plato) {
+  return safeText(pick(plato, DISH_IMAGE_KEYS)).trim() ||
+    getProfileDishPlaceholderUrl();
 }
 
 function normalizeHexColor(value) {
@@ -698,12 +715,7 @@ window.addEventListener("popstate", handleBackNavigation);
 function openSheet(plato) {
   pushHistoryState({ modal: "dish" });
   dishSheetDrag?.reset();
-  const imgUrl = pick(plato, [
-    "imagen_url",
-    "image_url",
-    "foto_url",
-    "img_url",
-  ]);
+  const imgUrl = getDishImageUrl(plato);
   if (imgUrl) {
     sheetImageWrap.style.display = "";
     const dishName = getDishName(plato);
@@ -1183,12 +1195,7 @@ function buildDishRow(plato) {
   const right = document.createElement("div");
   right.className = "dishRight";
 
-  const imgUrl = pick(plato, [
-    "imagen_url",
-    "image_url",
-    "foto_url",
-    "img_url",
-  ]);
+  const imgUrl = getDishImageUrl(plato);
   if (imgUrl) {
     const img = document.createElement("img");
     img.src = imgUrl;
@@ -1265,12 +1272,7 @@ function buildSearchItemRow(plato) {
   const right = document.createElement("div");
   right.className = "dishRight";
 
-  const imgUrl = pick(plato, [
-    "imagen_url",
-    "image_url",
-    "foto_url",
-    "img_url",
-  ]);
+  const imgUrl = getDishImageUrl(plato);
   if (imgUrl) {
     const img = document.createElement("img");
     img.src = imgUrl;

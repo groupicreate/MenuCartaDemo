@@ -226,6 +226,29 @@
           class="image-preview"
           style="display: none"
         ></div>
+
+        <div class="grid-2">
+          <div class="field">
+            <label>Imagen por defecto de platos (URL)</label>
+            <input id="perfilPlatoDefaultUrl" placeholder="https://..." />
+            <small class="hint">
+              Se usa solo cuando un plato no tiene imagen propia.
+            </small>
+          </div>
+          <div class="field">
+            <label>Imagen por defecto de platos (subir imagen)</label>
+            <input id="perfilPlatoDefaultFile" type="file" accept="image/*" />
+            <small class="hint">
+              Si no subes ninguna, los platos sin foto se verán en blanco.
+            </small>
+          </div>
+        </div>
+
+        <div
+          id="perfilPlatoDefaultPreview"
+          class="image-preview"
+          style="display: none"
+        ></div>
       </div>
     </section>
 
