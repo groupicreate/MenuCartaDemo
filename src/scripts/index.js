@@ -104,12 +104,18 @@ let CURRENT_LANG = "es";
 // Perfil (opcional): si existe tabla "Perfiles" o "Perfil", la usamos.
 let PROFILE = null;
 const DEFAULT_PRIMARY_COLOR = "#FFE800";
+const DEFAULT_THEME_INTENSITY = "suave";
 const PROFILE_PRIMARY_COLOR_KEYS = [
   "color_principal",
   "primary_color",
   "brand_color",
   "accent_color",
   "color",
+];
+const PROFILE_THEME_INTENSITY_KEYS = [
+  "intensidad_tema",
+  "theme_intensity",
+  "intensidad",
 ];
 
 // =============================
@@ -362,6 +368,12 @@ function pick(obj, keys) {
   return null;
 }
 
+function normalizeThemeIntensity(value) {
+  const raw = safeText(value).trim().toLowerCase();
+  if (raw === "suave" || raw === "medio" || raw === "vivo") return raw;
+  return null;
+}
+
 function normalizeHexColor(value) {
   const raw = safeText(value).trim();
   if (!raw) return null;
@@ -440,31 +452,77 @@ function bestTextColor(backgroundHex) {
   return darkContrast >= lightContrast ? "#121212" : "#FFFFFF";
 }
 
-function applyPublicTheme(primaryColor) {
+function applyPublicTheme(primaryColor, intensity = DEFAULT_THEME_INTENSITY) {
   const accent = normalizeHexColor(primaryColor) || DEFAULT_PRIMARY_COLOR;
-  const accentInk = bestTextColor(accent);
+  const level = normalizeThemeIntensity(intensity) || DEFAULT_THEME_INTENSITY;
   const accentOnLight = ensureContrast(accent, "#FFFFFF", 4.5);
   const accentOnDark = ensureContrast(accent, "#1F1F1F", 3.2);
+  const accentInk = bestTextColor(accentOnLight);
+  const intensityMap = {
+    suave: {
+      bgMix: 0.93,
+      soft1: 0.07,
+      soft2: 0.03,
+      cardMix: 0.98,
+      surfaceMix: 0.992,
+      surfaceSoftMix: 0.985,
+      surfacePressMix: 0.97,
+      lineMix: 0.9,
+      chipMix: 0.94,
+      accentSoft: 0.16,
+      coverStart: 0.82,
+      coverEnd: 0.94,
+    },
+    medio: {
+      bgMix: 0.88,
+      soft1: 0.12,
+      soft2: 0.06,
+      cardMix: 0.968,
+      surfaceMix: 0.985,
+      surfaceSoftMix: 0.972,
+      surfacePressMix: 0.95,
+      lineMix: 0.84,
+      chipMix: 0.89,
+      accentSoft: 0.2,
+      coverStart: 0.7,
+      coverEnd: 0.9,
+    },
+    vivo: {
+      bgMix: 0.82,
+      soft1: 0.18,
+      soft2: 0.1,
+      cardMix: 0.95,
+      surfaceMix: 0.97,
+      surfaceSoftMix: 0.94,
+      surfacePressMix: 0.9,
+      lineMix: 0.76,
+      chipMix: 0.82,
+      accentSoft: 0.26,
+      coverStart: 0.58,
+      coverEnd: 0.84,
+    },
+  };
+  const cfg = intensityMap[level];
   const theme = {
-    "--bg": mixHex(accent, "#f5f6fa", 0.76),
-    "--bg-soft-1": toRgba(accent, 0.24),
-    "--bg-soft-2": toRgba(accent, 0.16),
-    "--card": mixHex(accent, "#ffffff", 0.9),
-    "--surface": mixHex(accent, "#ffffff", 0.94),
-    "--surface-soft": mixHex(accent, "#f8fbff", 0.86),
-    "--surface-press": mixHex(accent, "#eef3fa", 0.8),
-    "--line": mixHex(accent, "#d8e1ee", 0.66),
-    "--chip": mixHex(accent, "#e8f0f8", 0.62),
-    "--chipActive": accent,
-    "--chipActiveText": accentInk,
-    "--accent": accent,
-    "--accent-strong": mixHex(accent, "#FFFFFF", 0.16),
+    "--bg": mixHex(accent, "#f5f6fa", cfg.bgMix),
+    "--bg-soft-1": toRgba(accent, cfg.soft1),
+    "--bg-soft-2": toRgba(accent, cfg.soft2),
+    "--card": mixHex(accent, "#ffffff", cfg.cardMix),
+    "--surface": mixHex(accent, "#ffffff", cfg.surfaceMix),
+    "--surface-soft": mixHex(accent, "#fbfcfe", cfg.surfaceSoftMix),
+    "--surface-press": mixHex(accent, "#f3f5f9", cfg.surfacePressMix),
+    "--line": mixHex(accent, "#e2e6ee", cfg.lineMix),
+    "--chip": mixHex(accent, "#f1f3f8", cfg.chipMix),
+    "--chipActive": accentOnLight,
+    "--chipActiveText": bestTextColor(accentOnLight),
+    "--accent": accentOnLight,
+    "--accent-strong": mixHex(accentOnLight, "#FFFFFF", 0.18),
     "--accent-ink": accentInk,
     "--accent-on-light": accentOnLight,
     "--accent-on-dark": accentOnDark,
-    "--accent-soft": toRgba(accent, 0.24),
-    "--accent-shadow": toRgba(accentOnDark, 0.42),
-    "--cover-gradient": `linear-gradient(135deg, ${mixHex(accent, "#b8cade", 0.36)}, ${mixHex(accent, "#eaf2fb", 0.68)})`,
+    "--accent-soft": toRgba(accent, cfg.accentSoft),
+    "--accent-shadow": toRgba(accentOnDark, 0.24),
+    "--cover-gradient": `linear-gradient(135deg, ${mixHex(accent, "#d7dce5", cfg.coverStart)}, ${mixHex(accent, "#f3f5f8", cfg.coverEnd)})`,
   };
   const root = document.documentElement;
   for (const [key, value] of Object.entries(theme)) {
@@ -1327,7 +1385,7 @@ async function loadProfileIfExists() {
 
 function applyProfileToHome() {
   if (!PROFILE) {
-    applyPublicTheme(DEFAULT_PRIMARY_COLOR);
+    applyPublicTheme(DEFAULT_PRIMARY_COLOR, DEFAULT_THEME_INTENSITY);
     // Fallback: si no hay portada, ponemos un degradado para no quedar feo
     coverImg.style.display = "none";
     cover.style.background = "var(--cover-gradient)";
@@ -1335,7 +1393,10 @@ function applyProfileToHome() {
     return;
   }
 
-  applyPublicTheme(pick(PROFILE, PROFILE_PRIMARY_COLOR_KEYS) || DEFAULT_PRIMARY_COLOR);
+  applyPublicTheme(
+    pick(PROFILE, PROFILE_PRIMARY_COLOR_KEYS) || DEFAULT_PRIMARY_COLOR,
+    pick(PROFILE, PROFILE_THEME_INTENSITY_KEYS) || DEFAULT_THEME_INTENSITY,
+  );
 
   const name = pick(PROFILE, [
     "nombre",
@@ -1737,7 +1798,7 @@ document.addEventListener("keydown", (e) => {
 // =============================
 // Init
 // =============================
-applyPublicTheme(DEFAULT_PRIMARY_COLOR);
+applyPublicTheme(DEFAULT_PRIMARY_COLOR, DEFAULT_THEME_INTENSITY);
 initLang();
 loadMenu();
 

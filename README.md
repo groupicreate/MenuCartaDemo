@@ -108,6 +108,7 @@ Campos clave:
 - `nombre`
 - `slug`
 - `color_principal` (hex, ej. `#FFE800`)
+- `intensidad_tema` (`suave` | `medio` | `vivo`)
 - `wifi_name`
 - `wifi_pass` ❗ privado
 - `wifi_pin_hash` ❗ privado
@@ -152,6 +153,7 @@ Incluye:
 - dirección
 - rating
 - color_principal
+- intensidad_tema
 - wifi_name
 
 ❌ Excluye:
@@ -177,6 +179,9 @@ Si se quiere **eliminar el contador de reseñas** y reconstruir la vista públic
 ```sql
 alter table "iMenu"."Perfil"
 add column if not exists color_principal text;
+
+alter table "iMenu"."Perfil"
+add column if not exists intensidad_tema text;
 ```
 
 2) Quitar la columna de la tabla `iMenu.Perfil`:
@@ -199,6 +204,7 @@ select
   slug,
   google_place_id,
   color_principal,
+  intensidad_tema,
   wifi_name
 from "iMenu"."Perfil";
 ```
