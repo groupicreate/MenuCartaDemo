@@ -8,6 +8,15 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 const db = supabase.schema("iMenu");
 // Bucket recomendado para imágenes (Supabase Storage)
 const STORAGE_BUCKET = "imenu";
+const DEFAULT_PRIMARY_COLOR = "#FFE800";
+const ADMIN_THEME_STORAGE_KEY = "imenu.admin.primary_color";
+const PROFILE_PRIMARY_COLOR_KEYS = [
+  "color_principal",
+  "primary_color",
+  "brand_color",
+  "accent_color",
+  "color",
+];
 
 let user = null;
 
@@ -66,6 +75,13 @@ const perfilPortadaFile = document.getElementById("perfilPortadaFile");
 const perfilPortadaPreview = document.getElementById("perfilPortadaPreview");
 const perfilGooglePlaceId = document.getElementById("perfilGooglePlaceId");
 const buscarPlaceIdBtn = document.getElementById("buscarPlaceIdBtn");
+const perfilColorPrincipal = document.getElementById("perfilColorPrincipal");
+const perfilColorPrincipalLabel = document.getElementById(
+  "perfilColorPrincipalLabel",
+);
+const colorSwatches = Array.from(
+  document.querySelectorAll(".color-swatch[data-color]"),
+);
 
 // Modal Place ID
 const placeIdModal = document.getElementById("placeIdModal");
@@ -107,6 +123,141 @@ const platosSearch = document.getElementById("platosSearch");
 // ========== HELPERS ==========
 function safeText(v) {
   return (v ?? "").toString();
+}
+
+function pickFirst(obj, keys) {
+  for (const key of keys) {
+    const value = obj?.[key];
+    if (value != null && value !== "") return value;
+  }
+  return null;
+}
+
+function normalizeHexColor(value) {
+  const raw = safeText(value).trim();
+  if (!raw) return null;
+  const withHash = raw.startsWith("#") ? raw : `#${raw}`;
+  if (/^#[\da-fA-F]{3}$/.test(withHash)) {
+    const short = withHash.slice(1);
+    return `#${short[0]}${short[0]}${short[1]}${short[1]}${short[2]}${short[2]}`.toUpperCase();
+  }
+  if (!/^#[\da-fA-F]{6}$/.test(withHash)) return null;
+  return withHash.toUpperCase();
+}
+
+function hexToRgb(hex) {
+  const normalized = normalizeHexColor(hex);
+  if (!normalized) return null;
+  const clean = normalized.slice(1);
+  return {
+    r: Number.parseInt(clean.slice(0, 2), 16),
+    g: Number.parseInt(clean.slice(2, 4), 16),
+    b: Number.parseInt(clean.slice(4, 6), 16),
+  };
+}
+
+function toRgba(hex, alpha) {
+  const rgb = hexToRgb(hex) || { r: 255, g: 232, b: 0 };
+  return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${alpha})`;
+}
+
+function mixHex(hexA, hexB, amount = 0.5) {
+  const a = hexToRgb(hexA) || hexToRgb(DEFAULT_PRIMARY_COLOR);
+  const b = hexToRgb(hexB) || hexToRgb("#FFFFFF");
+  const t = Math.max(0, Math.min(1, Number(amount) || 0));
+  const mix = (va, vb) => Math.round(va * (1 - t) + vb * t);
+  const rgb = [mix(a.r, b.r), mix(a.g, b.g), mix(a.b, b.b)];
+  return `#${rgb.map((v) => v.toString(16).padStart(2, "0")).join("")}`.toUpperCase();
+}
+
+function relativeLuminance({ r, g, b }) {
+  const channel = (v) => {
+    const n = v / 255;
+    return n <= 0.03928 ? n / 12.92 : ((n + 0.055) / 1.055) ** 2.4;
+  };
+  return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
+}
+
+function contrastRatio(hexA, hexB) {
+  const rgbA = hexToRgb(hexA);
+  const rgbB = hexToRgb(hexB);
+  if (!rgbA || !rgbB) return 1;
+  const lumA = relativeLuminance(rgbA);
+  const lumB = relativeLuminance(rgbB);
+  const lighter = Math.max(lumA, lumB);
+  const darker = Math.min(lumA, lumB);
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
+function bestTextColor(backgroundHex) {
+  const whiteContrast = contrastRatio(backgroundHex, "#FFFFFF");
+  const darkContrast = contrastRatio(backgroundHex, "#111111");
+  return darkContrast >= whiteContrast ? "#111111" : "#FFFFFF";
+}
+
+let activePrimaryColor = normalizeHexColor(
+  localStorage.getItem(ADMIN_THEME_STORAGE_KEY),
+);
+if (!activePrimaryColor) activePrimaryColor = DEFAULT_PRIMARY_COLOR;
+
+function markActiveSwatches(colorHex) {
+  const normalized = normalizeHexColor(colorHex) || DEFAULT_PRIMARY_COLOR;
+  colorSwatches.forEach((swatch) => {
+    const swatchColor = normalizeHexColor(swatch.dataset.color);
+    const isActive = swatchColor === normalized;
+    swatch.classList.toggle("is-active", isActive);
+    swatch.setAttribute("aria-pressed", isActive ? "true" : "false");
+  });
+
+  if (perfilColorPrincipal) {
+    perfilColorPrincipal.value = normalized.toLowerCase();
+  }
+  if (perfilColorPrincipalLabel) {
+    perfilColorPrincipalLabel.textContent = normalized;
+  }
+}
+
+function applyAdminTheme(color, { persist = true } = {}) {
+  const normalized = normalizeHexColor(color) || DEFAULT_PRIMARY_COLOR;
+  const accentStrong = mixHex(normalized, "#FFFFFF", 0.16);
+  const accentSoft = toRgba(normalized, 0.12);
+  const accentSoftAlt = toRgba(normalized, 0.08);
+  const accentShadow = toRgba(normalized, 0.25);
+  const accentShadowStrong = toRgba(normalized, 0.32);
+  const accentGlow1 = toRgba(normalized, 0.16);
+  const accentGlow2 = toRgba(normalized, 0.08);
+  const accentTintBg = toRgba(normalized, 0.1);
+  const accentTintPanel = toRgba(normalized, 0.16);
+  const accentInk = bestTextColor(normalized);
+
+  const root = document.documentElement;
+  root.style.setProperty("--accent", normalized);
+  root.style.setProperty("--accent-strong", accentStrong);
+  root.style.setProperty("--accent-soft", accentSoft);
+  root.style.setProperty("--accent-soft-alt", accentSoftAlt);
+  root.style.setProperty("--accent-shadow", accentShadow);
+  root.style.setProperty("--accent-shadow-strong", accentShadowStrong);
+  root.style.setProperty("--accent-glow-1", accentGlow1);
+  root.style.setProperty("--accent-glow-2", accentGlow2);
+  root.style.setProperty("--accent-tint-bg", accentTintBg);
+  root.style.setProperty("--accent-tint-panel", accentTintPanel);
+  root.style.setProperty("--accent-ink", accentInk);
+
+  activePrimaryColor = normalized;
+  markActiveSwatches(normalized);
+  if (persist) {
+    localStorage.setItem(ADMIN_THEME_STORAGE_KEY, normalized);
+  }
+  return normalized;
+}
+
+function getCurrentPrimaryColor() {
+  return (
+    normalizeHexColor(perfilColorPrincipal?.value) ||
+    normalizeHexColor(activePrimaryColor) ||
+    normalizeHexColor(localStorage.getItem(ADMIN_THEME_STORAGE_KEY)) ||
+    DEFAULT_PRIMARY_COLOR
+  );
 }
 
 const BASE_HREF = (() => {
@@ -228,6 +379,18 @@ async function requireUser() {
   throw new Error("Sesión caducada. Inicia sesión de nuevo.");
 }
 
+colorSwatches.forEach((swatch) => {
+  swatch.addEventListener("click", () => {
+    applyAdminTheme(swatch.dataset.color);
+  });
+});
+
+perfilColorPrincipal?.addEventListener("input", (event) => {
+  applyAdminTheme(event.target?.value);
+});
+
+applyAdminTheme(activePrimaryColor, { persist: false });
+
 // ========== LOGIN ==========
 document.getElementById("loginBtn").onclick = async () => {
   const email = document.getElementById("email").value;
@@ -318,6 +481,13 @@ async function cargarPerfil() {
     perfilPortadaUrl.value = safeText(data.portada_url);
     perfilGooglePlaceId.value = safeText(data.google_place_id);
     showPreview(perfilPortadaPreview, data.portada_url);
+
+    const perfilPrimaryColor = pickFirst(data, PROFILE_PRIMARY_COLOR_KEYS);
+    if (perfilPrimaryColor) {
+      applyAdminTheme(perfilPrimaryColor, { persist: true });
+    } else {
+      markActiveSwatches(getCurrentPrimaryColor());
+    }
   }
 }
 
@@ -335,6 +505,7 @@ perfilPortadaFile?.addEventListener("change", () => {
 document.getElementById("guardarPerfilBtn").onclick = async () => {
   try {
     const currentUser = await requireUser();
+    const primaryColor = getCurrentPrimaryColor();
     let portadaFinal = perfilPortadaUrl.value.trim();
     const f = perfilPortadaFile.files?.[0];
     if (f) {
@@ -367,9 +538,55 @@ document.getElementById("guardarPerfilBtn").onclick = async () => {
       .maybeSingle();
     if (existsErr) throw existsErr;
 
-    const { error } = existing
-      ? await db.from("Perfil").update(payload).eq("user_id", currentUser.id)
-      : await db.from("Perfil").insert(payload);
+    const upsertPerfil = (writePayload) =>
+      existing
+        ? db.from("Perfil").update(writePayload).eq("user_id", currentUser.id)
+        : db.from("Perfil").insert(writePayload);
+
+    const isColorColumnError = (err) => {
+      const msg = safeText(err?.message).toLowerCase();
+      const isMissingCol =
+        msg.includes("column") ||
+        msg.includes("does not exist") ||
+        msg.includes("schema cache") ||
+        msg.includes("unknown");
+      const mentionsBranding =
+        msg.includes("color") || msg.includes("accent") || msg.includes("brand");
+      return isMissingCol && mentionsBranding;
+    };
+
+    let error = null;
+    let colorSaved = false;
+    for (const colorKey of PROFILE_PRIMARY_COLOR_KEYS) {
+      const withColor = {
+        ...payload,
+        [colorKey]: primaryColor || null,
+      };
+      const { error: colorErr } = await upsertPerfil(withColor);
+      if (!colorErr) {
+        colorSaved = true;
+        error = null;
+        break;
+      }
+
+      if (!isColorColumnError(colorErr)) {
+        error = colorErr;
+        break;
+      }
+      error = colorErr;
+    }
+
+    if (!colorSaved && !error) {
+      const { error: fallbackErr } = await upsertPerfil(payload);
+      error = fallbackErr || null;
+    } else if (!colorSaved && isColorColumnError(error)) {
+      console.warn(
+        "Perfil sin columna de color principal compatible. Guardando sin branding persistente.",
+        error.message,
+      );
+      const { error: fallbackErr } = await upsertPerfil(payload);
+      error = fallbackErr || null;
+    }
     if (error) throw error;
 
     // Si el usuario ha escrito un PIN, lo guardamos (hasheado) via RPC

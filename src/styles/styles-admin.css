@@ -12,6 +12,15 @@
     --border: #2d2d2d;
     --accent: #ffe800;
     --accent-strong: #fff200;
+    --accent-soft: rgba(255, 232, 0, 0.12);
+    --accent-soft-alt: rgba(255, 232, 0, 0.08);
+    --accent-shadow: rgba(255, 232, 0, 0.25);
+    --accent-shadow-strong: rgba(255, 232, 0, 0.32);
+    --accent-glow-1: rgba(255, 232, 0, 0.14);
+    --accent-glow-2: rgba(255, 232, 0, 0.08);
+    --accent-tint-bg: rgba(255, 232, 0, 0.1);
+    --accent-tint-panel: rgba(255, 232, 0, 0.16);
+    --accent-ink: #0a0a0a;
     --text: #f3f3f3;
     --muted: #b6b6b6;
     --radius: 14px;
@@ -25,8 +34,8 @@ body {
         "Segoe UI",
         sans-serif;
     background:
-        radial-gradient(1200px 600px at 15% -15%, rgba(255, 232, 0, 0.14), transparent 60%),
-        radial-gradient(900px 500px at 85% -25%, rgba(255, 232, 0, 0.08), transparent 60%),
+        radial-gradient(1200px 600px at 15% -15%, var(--accent-glow-1), transparent 60%),
+        radial-gradient(900px 500px at 85% -25%, var(--accent-glow-2), transparent 60%),
         var(--bg);
     color: var(--text);
     padding: 20px;
@@ -136,6 +145,74 @@ button:active,
 .section-hint {
     margin: 0;
     font-size: 12px;
+    color: var(--muted);
+}
+
+.color-palette {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.color-swatch {
+    appearance: none;
+    width: 34px;
+    height: 34px;
+    border-radius: 999px;
+    border: 2px solid var(--border);
+    background: var(--swatch);
+    cursor: pointer;
+    box-shadow:
+        inset 0 0 0 1px rgba(0, 0, 0, 0.28),
+        0 0 0 0 transparent;
+    padding: 0;
+}
+
+.color-swatch:hover {
+    transform: translateY(-1px);
+}
+
+.color-swatch.is-active {
+    border-color: var(--accent);
+    box-shadow:
+        0 0 0 3px var(--accent-soft),
+        inset 0 0 0 1px rgba(0, 0, 0, 0.3);
+}
+
+.color-picker-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+#perfilColorPrincipal {
+    width: 56px;
+    height: 38px;
+    border: 0;
+    background: transparent;
+    padding: 0;
+    cursor: pointer;
+}
+
+#perfilColorPrincipal::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+
+#perfilColorPrincipal::-webkit-color-swatch {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+}
+
+#perfilColorPrincipal::-moz-color-swatch {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+}
+
+#perfilColorPrincipalLabel {
+    min-width: 76px;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    font-weight: 700;
     color: var(--muted);
 }
 
@@ -353,7 +430,7 @@ h1 svg {
 #login-form input:focus {
     outline: none;
     border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(255, 232, 0, 0.12);
+    box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
 #login-form button {
@@ -361,7 +438,7 @@ h1 svg {
     padding: 12px;
     margin-top: 12px;
     background: var(--accent);
-    color: #0a0a0a;
+    color: var(--accent-ink);
     border: none;
     border-radius: 10px;
     cursor: pointer;
@@ -372,7 +449,7 @@ h1 svg {
 
 #login-form button:hover {
     transform: translateY(-2px);
-    box-shadow: 0 10px 24px rgba(255, 232, 0, 0.25);
+    box-shadow: 0 10px 24px var(--accent-shadow);
     background: var(--accent-strong);
 }
 
@@ -408,9 +485,9 @@ h1 svg {
 }
 
 .tab.active {
-    color: #111111;
+    color: var(--accent-ink);
     background: var(--accent);
-    box-shadow: 0 8px 18px rgba(255, 232, 0, 0.22);
+    box-shadow: 0 8px 18px var(--accent-shadow);
 }
 
 .tab:hover {
@@ -461,9 +538,9 @@ h1 svg {
 /* Efecto visual mejorado al arrastrar */
 .categoria-item.dragging {
     opacity: 0.6;
-    background: #2a2a1a;
-    border: 2px solid #ffff00;
-    box-shadow: 0 5px 20px rgba(255, 255, 0, 0.3);
+    background: var(--accent-tint-bg);
+    border: 2px solid var(--accent);
+    box-shadow: 0 5px 20px var(--accent-shadow-strong);
     transform: scale(1.02);
 }
 
@@ -480,8 +557,8 @@ h1 svg {
 }
 
 .drag-handle:hover {
-    color: #ffff00;
-    background: rgba(255, 255, 0, 0.1);
+    color: var(--accent);
+    background: var(--accent-soft-alt);
 }
 
 .drag-handle:active {
@@ -511,13 +588,13 @@ h1 svg {
 }
 
 .btn-editar {
-    background-color: #ffff00;
-    color: #0a0a0a;
+    background-color: var(--accent);
+    color: var(--accent-ink);
     font-weight: 600;
 }
 .btn-editar:hover {
-    background-color: #ffff33;
-    box-shadow: 0 2px 8px rgba(255, 255, 0, 0.3);
+    background-color: var(--accent-strong);
+    box-shadow: 0 2px 8px var(--accent-shadow);
 }
 .btn-toggle {
     background-color: #2a2a2a;
@@ -526,7 +603,7 @@ h1 svg {
 }
 .btn-toggle:hover {
     background-color: #333;
-    border-color: #ffff00;
+    border-color: var(--accent);
 }
 .btn-eliminar {
     background-color: #ff3333;
@@ -562,13 +639,13 @@ h1 svg {
 .form-box select:focus {
     outline: none;
     border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(255, 232, 0, 0.12);
+    box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
-.form-box button {
+.form-box button:not(.color-swatch) {
     padding: 10px 18px;
     background-color: var(--accent);
-    color: #111111;
+    color: var(--accent-ink);
     border: none;
     border-radius: 10px;
     cursor: pointer;
@@ -577,9 +654,9 @@ h1 svg {
     transition: all 0.3s;
 }
 
-.form-box button:hover {
+.form-box button:not(.color-swatch):hover {
     background-color: var(--accent-strong);
-    box-shadow: 0 10px 24px rgba(255, 232, 0, 0.25);
+    box-shadow: 0 10px 24px var(--accent-shadow);
     transform: translateY(-1px);
 }
 
@@ -608,7 +685,7 @@ h1 svg {
 .secondaryBtn:hover {
     border-color: var(--accent);
     color: var(--accent);
-    background: rgba(255, 232, 0, 0.08);
+    background: var(--accent-soft-alt);
 }
 
 .form-box input::placeholder,
@@ -661,14 +738,14 @@ h1 svg {
 }
 
 .alergeno-item:hover {
-    border-color: #ffff00;
-    background: #2a2a1a;
+    border-color: var(--accent);
+    background: var(--accent-tint-bg);
 }
 
 .alergeno-item.selected {
-    border-color: #ffff00;
-    background: #2a2a1a;
-    box-shadow: 0 0 10px rgba(255, 255, 0, 0.2);
+    border-color: var(--accent);
+    background: var(--accent-tint-bg);
+    box-shadow: 0 0 10px var(--accent-soft);
 }
 
 .alergeno-item img {
@@ -724,7 +801,7 @@ h1 svg {
     margin-bottom: 40px;
 }
 .platos-por-categoria h3 {
-    border-bottom: 2px solid #ffff00;
+    border-bottom: 2px solid var(--accent);
     padding-bottom: 8px;
     margin-bottom: 15px;
     color: #ffffff;
@@ -757,14 +834,14 @@ h1 svg {
 /* Efecto visual mejorado al arrastrar */
 .plato-item.dragging {
     opacity: 0.6;
-    background: #2a2a1a;
-    border: 2px solid #ffff00;
-    box-shadow: 0 5px 20px rgba(255, 255, 0, 0.3);
+    background: var(--accent-tint-bg);
+    border: 2px solid var(--accent);
+    box-shadow: 0 5px 20px var(--accent-shadow-strong);
     transform: scale(1.02);
 }
 
 .plato-item.drag-over {
-    border-top: 3px solid #ffff00;
+    border-top: 3px solid var(--accent);
 }
 
 .plato-info {
@@ -830,7 +907,7 @@ h1 svg {
 }
 
 #logoutBtn:hover {
-    background-color: rgba(255, 232, 0, 0.08);
+    background-color: var(--accent-soft-alt);
     border-color: var(--accent);
     color: var(--accent);
 }

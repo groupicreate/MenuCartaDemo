@@ -107,6 +107,7 @@ Campos clave:
 - `user_id` (owner)
 - `nombre`
 - `slug`
+- `color_principal` (hex, ej. `#FFE800`)
 - `wifi_name`
 - `wifi_pass` ❗ privado
 - `wifi_pin_hash` ❗ privado
@@ -150,6 +151,7 @@ Incluye:
 - teléfono
 - dirección
 - rating
+- color_principal
 - wifi_name
 
 ❌ Excluye:
@@ -170,13 +172,20 @@ La carta pública **solo consulta esta vista**.
 
 Si se quiere **eliminar el contador de reseñas** y reconstruir la vista pública:
 
-1) Quitar la columna de la tabla `iMenu.Perfil`:
+1) Añadir columna de branding (si no existe):
+
+```sql
+alter table "iMenu"."Perfil"
+add column if not exists color_principal text;
+```
+
+2) Quitar la columna de la tabla `iMenu.Perfil`:
 
 ```sql
 alter table "iMenu"."Perfil" drop column if exists rating_count;
 ```
 
-2) Recrear la vista pública sin esa columna:
+3) Recrear la vista pública sin esa columna y con color principal:
 
 ```sql
 create or replace view "iMenu"."Perfil_publico" as
@@ -189,11 +198,12 @@ select
   reviews_url,
   slug,
   google_place_id,
+  color_principal,
   wifi_name
 from "iMenu"."Perfil";
 ```
 
-3) Reaplicar permisos:
+4) Reaplicar permisos:
 
 ```sql
 grant select on "iMenu"."Perfil_publico" to anon, authenticated;

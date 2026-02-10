@@ -103,6 +103,14 @@ let CURRENT_LANG = "es";
 
 // Perfil (opcional): si existe tabla "Perfiles" o "Perfil", la usamos.
 let PROFILE = null;
+const DEFAULT_PRIMARY_COLOR = "#FFE800";
+const PROFILE_PRIMARY_COLOR_KEYS = [
+  "color_principal",
+  "primary_color",
+  "brand_color",
+  "accent_color",
+  "color",
+];
 
 // =============================
 // Utils
@@ -352,6 +360,96 @@ function pick(obj, keys) {
     if (obj && obj[k] != null && obj[k] !== "") return obj[k];
   }
   return null;
+}
+
+function normalizeHexColor(value) {
+  const raw = safeText(value).trim();
+  if (!raw) return null;
+  const withHash = raw.startsWith("#") ? raw : `#${raw}`;
+  if (/^#[\da-fA-F]{3}$/.test(withHash)) {
+    const short = withHash.slice(1);
+    return `#${short[0]}${short[0]}${short[1]}${short[1]}${short[2]}${short[2]}`.toUpperCase();
+  }
+  if (!/^#[\da-fA-F]{6}$/.test(withHash)) return null;
+  return withHash.toUpperCase();
+}
+
+function hexToRgb(hex) {
+  const normalized = normalizeHexColor(hex);
+  if (!normalized) return null;
+  const clean = normalized.slice(1);
+  return {
+    r: Number.parseInt(clean.slice(0, 2), 16),
+    g: Number.parseInt(clean.slice(2, 4), 16),
+    b: Number.parseInt(clean.slice(4, 6), 16),
+  };
+}
+
+function toRgba(hex, alpha) {
+  const rgb = hexToRgb(hex) || { r: 255, g: 232, b: 0 };
+  return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${alpha})`;
+}
+
+function mixHex(hexA, hexB, amount = 0.5) {
+  const a = hexToRgb(hexA) || hexToRgb(DEFAULT_PRIMARY_COLOR);
+  const b = hexToRgb(hexB) || hexToRgb("#FFFFFF");
+  const t = Math.max(0, Math.min(1, Number(amount) || 0));
+  const mix = (va, vb) => Math.round(va * (1 - t) + vb * t);
+  const rgb = [mix(a.r, b.r), mix(a.g, b.g), mix(a.b, b.b)];
+  return `#${rgb.map((v) => v.toString(16).padStart(2, "0")).join("")}`.toUpperCase();
+}
+
+function relativeLuminance({ r, g, b }) {
+  const channel = (v) => {
+    const n = v / 255;
+    return n <= 0.03928 ? n / 12.92 : ((n + 0.055) / 1.055) ** 2.4;
+  };
+  return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
+}
+
+function contrastRatio(hexA, hexB) {
+  const rgbA = hexToRgb(hexA);
+  const rgbB = hexToRgb(hexB);
+  if (!rgbA || !rgbB) return 1;
+  const lumA = relativeLuminance(rgbA);
+  const lumB = relativeLuminance(rgbB);
+  const lighter = Math.max(lumA, lumB);
+  const darker = Math.min(lumA, lumB);
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
+function bestTextColor(backgroundHex) {
+  const darkContrast = contrastRatio(backgroundHex, "#121212");
+  const lightContrast = contrastRatio(backgroundHex, "#FFFFFF");
+  return darkContrast >= lightContrast ? "#121212" : "#FFFFFF";
+}
+
+function applyPublicTheme(primaryColor) {
+  const accent = normalizeHexColor(primaryColor) || DEFAULT_PRIMARY_COLOR;
+  const accentInk = bestTextColor(accent);
+  const theme = {
+    "--bg": mixHex(accent, "#f5f6fa", 0.9),
+    "--bg-soft-1": toRgba(accent, 0.12),
+    "--bg-soft-2": toRgba(accent, 0.08),
+    "--card": mixHex(accent, "#ffffff", 0.95),
+    "--surface": mixHex(accent, "#ffffff", 0.97),
+    "--surface-soft": mixHex(accent, "#f7f8fb", 0.94),
+    "--surface-press": mixHex(accent, "#eef1f5", 0.9),
+    "--line": mixHex(accent, "#dde2ea", 0.86),
+    "--chip": mixHex(accent, "#edf1f6", 0.88),
+    "--chipActive": accent,
+    "--chipActiveText": accentInk,
+    "--accent": accent,
+    "--accent-strong": mixHex(accent, "#FFFFFF", 0.16),
+    "--accent-ink": accentInk,
+    "--accent-soft": toRgba(accent, 0.16),
+    "--accent-shadow": toRgba(accent, 0.32),
+    "--cover-gradient": `linear-gradient(135deg, ${mixHex(accent, "#cad5e5", 0.56)}, ${mixHex(accent, "#f4f7fb", 0.88)})`,
+  };
+  const root = document.documentElement;
+  for (const [key, value] of Object.entries(theme)) {
+    root.style.setProperty(key, value);
+  }
 }
 
 function t(key, vars) {
@@ -1209,12 +1307,15 @@ async function loadProfileIfExists() {
 
 function applyProfileToHome() {
   if (!PROFILE) {
+    applyPublicTheme(DEFAULT_PRIMARY_COLOR);
     // Fallback: si no hay portada, ponemos un degradado para no quedar feo
     coverImg.style.display = "none";
-    cover.style.background = "linear-gradient(135deg, #d7d7dd, #f5f5f7)";
+    cover.style.background = "var(--cover-gradient)";
     placeTitle.textContent = t("home_title_default");
     return;
   }
+
+  applyPublicTheme(pick(PROFILE, PROFILE_PRIMARY_COLOR_KEYS) || DEFAULT_PRIMARY_COLOR);
 
   const name = pick(PROFILE, [
     "nombre",
@@ -1237,7 +1338,7 @@ function applyProfileToHome() {
     coverImg.style.display = "";
   } else {
     coverImg.style.display = "none";
-    cover.style.background = "linear-gradient(135deg, #d7d7dd, #f5f5f7)";
+    cover.style.background = "var(--cover-gradient)";
   }
 
   // Reseñas / Rating (opcional)
@@ -1616,6 +1717,7 @@ document.addEventListener("keydown", (e) => {
 // =============================
 // Init
 // =============================
+applyPublicTheme(DEFAULT_PRIMARY_COLOR);
 initLang();
 loadMenu();
 
