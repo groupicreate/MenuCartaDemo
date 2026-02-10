@@ -315,8 +315,12 @@ button:active,
 .dishRight{
   width:92px; height:72px;
   border-radius:10px;
+  border:var(--frame-width) solid var(--frame-border);
   background:var(--chip);
   overflow:hidden;
+  box-shadow:
+    0 0 0 calc(var(--frame-ring-width) * .4) var(--frame-ring),
+    0 0 0 1px var(--frame-shadow) inset;
 }
 .dishRight img{width:100%; height:100%; object-fit:cover; display:block}
 
@@ -463,7 +467,14 @@ button:active,
   touch-action:none;
 }
 .sheetCard.is-dragging{transition:none}
-.sheetImage{height:220px; background:var(--chip)}
+.sheetImage{
+  height:220px;
+  background:var(--chip);
+  border:var(--frame-width) solid var(--frame-border);
+  box-shadow:
+    0 0 0 calc(var(--frame-ring-width) * .4) var(--frame-ring) inset,
+    0 0 0 1px var(--frame-shadow) inset;
+}
 .sheetImage{
   touch-action:none;
   cursor:grab;
