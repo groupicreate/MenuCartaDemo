@@ -15,6 +15,8 @@
   --accent:#1f1f1f;
   --accent-strong:#111111;
   --accent-ink:#ffffff;
+  --accent-on-light:#1f1f1f;
+  --accent-on-dark:#ffffff;
   --accent-soft:rgba(31,31,31,.12);
   --accent-shadow:rgba(0,0,0,.28);
   --cover-gradient:linear-gradient(135deg,#d7d7dd,#f5f5f7);
@@ -87,9 +89,12 @@ button:active,
 /* HOME card */
 .homeCard{
   background:var(--card);
+  border:1px solid var(--accent-soft);
   border-radius:26px;
   overflow:hidden;
-  box-shadow:0 8px 26px rgba(0,0,0,.12);
+  box-shadow:
+    0 8px 26px rgba(0,0,0,.12),
+    0 0 0 1px rgba(255,255,255,.4) inset;
 }
 .cover{
   position:relative;
@@ -160,13 +165,21 @@ button:active,
 }
 .rowBtn{
   border:1px solid var(--line);
-  background:var(--surface);
+  background:linear-gradient(180deg,var(--surface),var(--surface-soft));
   border-radius:16px;
   padding:12px 12px;
   display:flex; align-items:center; gap:10px;
   text-align:left;
 }
-.rowIcon{width:26px; height:26px; display:grid; place-items:center; color:var(--text)}
+.rowIcon{
+  width:26px;
+  height:26px;
+  display:grid;
+  place-items:center;
+  color:var(--accent-on-light);
+  background:var(--accent-soft);
+  border-radius:8px;
+}
 .rowIcon svg{width:22px; height:22px; fill:currentColor}
 .rowText{flex:1}
 .rowPrimary{font-weight:700; font-size:15px}
@@ -175,8 +188,8 @@ button:active,
 
 .categoryButtons{display:flex; flex-direction:column; gap:12px; padding:6px 0 4px}
 .catBtn{
-  border:1px solid var(--line);
-  background:var(--surface);
+  border:1px solid var(--accent-soft);
+  background:linear-gradient(180deg,var(--surface),var(--surface-soft));
   border-radius:999px;
   padding:14px 16px;
   font-weight:700;
@@ -191,6 +204,7 @@ button:active,
 .topbar{
   width:min(430px, 100%);
   background:var(--card);
+  border:1px solid var(--accent-soft);
   border-radius:26px 26px 18px 18px;
   padding:12px 12px;
   display:flex; align-items:center; gap:10px;
@@ -202,6 +216,7 @@ button:active,
 .listWrap{
   width:min(430px, 100%);
   background:var(--card);
+  border:1px solid var(--accent-soft);
   border-radius:18px;
   overflow:hidden;
   box-shadow:0 8px 24px rgba(0,0,0,.10);
@@ -250,8 +265,10 @@ button:active,
   padding:14px 16px;
   font-size:22px;
   font-weight:800;
+  color:var(--accent-on-light);
   margin:0;
   border-bottom:1px solid var(--line);
+  background:linear-gradient(180deg,var(--surface),var(--surface-soft));
 }
 
 .dishRow{
@@ -279,6 +296,7 @@ button:active,
 .dishName{font-weight:800; margin:0 0 4px; font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
 .dishDesc{color:var(--muted); font-size:13px; line-height:1.25; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden}
 .dishPrice{font-weight:800; margin-top:6px}
+.dishPrice{color:var(--accent-on-light)}
 
 .dishRight{
   width:92px; height:72px;
@@ -292,9 +310,10 @@ button:active,
   padding:14px 16px;
   font-size:22px;
   font-weight:800;
+  color:var(--accent-on-light);
   margin:0;
   border-bottom:1px solid var(--line);
-  background:var(--surface);
+  background:linear-gradient(180deg,var(--surface),var(--surface-soft));
 }
 
 .loading,.empty-message{padding:20px 16px; color:var(--muted)}
@@ -345,6 +364,7 @@ button:active,
   margin:0;
   font-weight:900;
   font-size:18px;
+  color:var(--accent-on-light);
   letter-spacing:-.01em;
   text-transform:capitalize;
 }
@@ -532,7 +552,8 @@ button:active,
   width:34px;
   height:34px;
   border-radius:12px;
-  background:var(--chip);
+  background:var(--accent-soft);
+  color:var(--accent-on-light);
   display:grid;
   place-items:center;
   flex:0 0 auto;

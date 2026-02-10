@@ -418,6 +418,22 @@ function contrastRatio(hexA, hexB) {
   return (lighter + 0.05) / (darker + 0.05);
 }
 
+function ensureContrast(colorHex, againstHex, minRatio = 4.5) {
+  const base = normalizeHexColor(colorHex) || DEFAULT_PRIMARY_COLOR;
+  const against = normalizeHexColor(againstHex) || "#FFFFFF";
+  if (contrastRatio(base, against) >= minRatio) return base;
+
+  const againstLum = relativeLuminance(
+    hexToRgb(against) || { r: 255, g: 255, b: 255 },
+  );
+  const target = againstLum < 0.5 ? "#FFFFFF" : "#000000";
+  for (let i = 1; i <= 20; i++) {
+    const candidate = mixHex(base, target, i / 20);
+    if (contrastRatio(candidate, against) >= minRatio) return candidate;
+  }
+  return target;
+}
+
 function bestTextColor(backgroundHex) {
   const darkContrast = contrastRatio(backgroundHex, "#121212");
   const lightContrast = contrastRatio(backgroundHex, "#FFFFFF");
@@ -427,24 +443,28 @@ function bestTextColor(backgroundHex) {
 function applyPublicTheme(primaryColor) {
   const accent = normalizeHexColor(primaryColor) || DEFAULT_PRIMARY_COLOR;
   const accentInk = bestTextColor(accent);
+  const accentOnLight = ensureContrast(accent, "#FFFFFF", 4.5);
+  const accentOnDark = ensureContrast(accent, "#1F1F1F", 3.2);
   const theme = {
-    "--bg": mixHex(accent, "#f5f6fa", 0.9),
-    "--bg-soft-1": toRgba(accent, 0.12),
-    "--bg-soft-2": toRgba(accent, 0.08),
-    "--card": mixHex(accent, "#ffffff", 0.95),
-    "--surface": mixHex(accent, "#ffffff", 0.97),
-    "--surface-soft": mixHex(accent, "#f7f8fb", 0.94),
-    "--surface-press": mixHex(accent, "#eef1f5", 0.9),
-    "--line": mixHex(accent, "#dde2ea", 0.86),
-    "--chip": mixHex(accent, "#edf1f6", 0.88),
+    "--bg": mixHex(accent, "#f5f6fa", 0.76),
+    "--bg-soft-1": toRgba(accent, 0.24),
+    "--bg-soft-2": toRgba(accent, 0.16),
+    "--card": mixHex(accent, "#ffffff", 0.9),
+    "--surface": mixHex(accent, "#ffffff", 0.94),
+    "--surface-soft": mixHex(accent, "#f8fbff", 0.86),
+    "--surface-press": mixHex(accent, "#eef3fa", 0.8),
+    "--line": mixHex(accent, "#d8e1ee", 0.66),
+    "--chip": mixHex(accent, "#e8f0f8", 0.62),
     "--chipActive": accent,
     "--chipActiveText": accentInk,
     "--accent": accent,
     "--accent-strong": mixHex(accent, "#FFFFFF", 0.16),
     "--accent-ink": accentInk,
-    "--accent-soft": toRgba(accent, 0.16),
-    "--accent-shadow": toRgba(accent, 0.32),
-    "--cover-gradient": `linear-gradient(135deg, ${mixHex(accent, "#cad5e5", 0.56)}, ${mixHex(accent, "#f4f7fb", 0.88)})`,
+    "--accent-on-light": accentOnLight,
+    "--accent-on-dark": accentOnDark,
+    "--accent-soft": toRgba(accent, 0.24),
+    "--accent-shadow": toRgba(accentOnDark, 0.42),
+    "--cover-gradient": `linear-gradient(135deg, ${mixHex(accent, "#b8cade", 0.36)}, ${mixHex(accent, "#eaf2fb", 0.68)})`,
   };
   const root = document.documentElement;
   for (const [key, value] of Object.entries(theme)) {

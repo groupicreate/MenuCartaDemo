@@ -189,6 +189,20 @@ function contrastRatio(hexA, hexB) {
   return (lighter + 0.05) / (darker + 0.05);
 }
 
+function ensureContrast(colorHex, againstHex, minRatio = 3.2) {
+  const base = normalizeHexColor(colorHex) || DEFAULT_PRIMARY_COLOR;
+  const against = normalizeHexColor(againstHex) || "#1C1C1C";
+  if (contrastRatio(base, against) >= minRatio) return base;
+
+  const againstLum = relativeLuminance(hexToRgb(against) || { r: 28, g: 28, b: 28 });
+  const target = againstLum < 0.5 ? "#FFFFFF" : "#000000";
+  for (let i = 1; i <= 20; i++) {
+    const candidate = mixHex(base, target, i / 20);
+    if (contrastRatio(candidate, against) >= minRatio) return candidate;
+  }
+  return target;
+}
+
 function bestTextColor(backgroundHex) {
   const whiteContrast = contrastRatio(backgroundHex, "#FFFFFF");
   const darkContrast = contrastRatio(backgroundHex, "#111111");
@@ -219,20 +233,24 @@ function markActiveSwatches(colorHex) {
 
 function applyAdminTheme(color, { persist = true } = {}) {
   const normalized = normalizeHexColor(color) || DEFAULT_PRIMARY_COLOR;
+  const accentUi = ensureContrast(normalized, "#1C1C1C", 3.2);
   const accentStrong = mixHex(normalized, "#FFFFFF", 0.16);
-  const accentSoft = toRgba(normalized, 0.12);
-  const accentSoftAlt = toRgba(normalized, 0.08);
-  const accentShadow = toRgba(normalized, 0.25);
-  const accentShadowStrong = toRgba(normalized, 0.32);
-  const accentGlow1 = toRgba(normalized, 0.16);
-  const accentGlow2 = toRgba(normalized, 0.08);
-  const accentTintBg = toRgba(normalized, 0.1);
-  const accentTintPanel = toRgba(normalized, 0.16);
+  const accentUiStrong = ensureContrast(accentStrong, "#1C1C1C", 3.4);
+  const accentSoft = toRgba(accentUi, 0.16);
+  const accentSoftAlt = toRgba(accentUi, 0.1);
+  const accentShadow = toRgba(accentUi, 0.28);
+  const accentShadowStrong = toRgba(accentUi, 0.36);
+  const accentGlow1 = toRgba(accentUi, 0.2);
+  const accentGlow2 = toRgba(accentUi, 0.12);
+  const accentTintBg = toRgba(accentUi, 0.14);
+  const accentTintPanel = toRgba(accentUi, 0.2);
   const accentInk = bestTextColor(normalized);
 
   const root = document.documentElement;
   root.style.setProperty("--accent", normalized);
   root.style.setProperty("--accent-strong", accentStrong);
+  root.style.setProperty("--accent-ui", accentUi);
+  root.style.setProperty("--accent-ui-strong", accentUiStrong);
   root.style.setProperty("--accent-soft", accentSoft);
   root.style.setProperty("--accent-soft-alt", accentSoftAlt);
   root.style.setProperty("--accent-shadow", accentShadow);

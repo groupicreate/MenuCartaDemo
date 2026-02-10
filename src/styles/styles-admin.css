@@ -12,6 +12,8 @@
     --border: #2d2d2d;
     --accent: #ffe800;
     --accent-strong: #fff200;
+    --accent-ui: #ffe800;
+    --accent-ui-strong: #fff200;
     --accent-soft: rgba(255, 232, 0, 0.12);
     --accent-soft-alt: rgba(255, 232, 0, 0.08);
     --accent-shadow: rgba(255, 232, 0, 0.25);
@@ -139,7 +141,7 @@ button:active,
     font-size: 12px;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--accent);
+    color: var(--accent-ui);
 }
 
 .section-hint {
@@ -173,7 +175,7 @@ button:active,
 }
 
 .color-swatch.is-active {
-    border-color: var(--accent);
+    border-color: var(--accent-ui);
     box-shadow:
         0 0 0 3px var(--accent-soft),
         inset 0 0 0 1px rgba(0, 0, 0, 0.3);
@@ -429,7 +431,7 @@ h1 svg {
 
 #login-form input:focus {
     outline: none;
-    border-color: var(--accent);
+    border-color: var(--accent-ui);
     box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
@@ -487,6 +489,7 @@ h1 svg {
 .tab.active {
     color: var(--accent-ink);
     background: var(--accent);
+    border-color: var(--accent-ui);
     box-shadow: 0 8px 18px var(--accent-shadow);
 }
 
@@ -539,7 +542,7 @@ h1 svg {
 .categoria-item.dragging {
     opacity: 0.6;
     background: var(--accent-tint-bg);
-    border: 2px solid var(--accent);
+    border: 2px solid var(--accent-ui);
     box-shadow: 0 5px 20px var(--accent-shadow-strong);
     transform: scale(1.02);
 }
@@ -557,7 +560,7 @@ h1 svg {
 }
 
 .drag-handle:hover {
-    color: var(--accent);
+    color: var(--accent-ui);
     background: var(--accent-soft-alt);
 }
 
@@ -603,7 +606,7 @@ h1 svg {
 }
 .btn-toggle:hover {
     background-color: #333;
-    border-color: var(--accent);
+    border-color: var(--accent-ui);
 }
 .btn-eliminar {
     background-color: #ff3333;
@@ -638,7 +641,7 @@ h1 svg {
 .form-box input:focus,
 .form-box select:focus {
     outline: none;
-    border-color: var(--accent);
+    border-color: var(--accent-ui);
     box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
@@ -668,8 +671,8 @@ h1 svg {
 
 .form-box button.cancel:hover {
     background-color: #1f1f1f;
-    border-color: var(--accent);
-    color: var(--accent);
+    border-color: var(--accent-ui);
+    color: var(--accent-ui);
 }
 
 .secondaryBtn {
@@ -683,8 +686,8 @@ h1 svg {
 }
 
 .secondaryBtn:hover {
-    border-color: var(--accent);
-    color: var(--accent);
+    border-color: var(--accent-ui);
+    color: var(--accent-ui);
     background: var(--accent-soft-alt);
 }
 
@@ -738,12 +741,12 @@ h1 svg {
 }
 
 .alergeno-item:hover {
-    border-color: var(--accent);
+    border-color: var(--accent-ui);
     background: var(--accent-tint-bg);
 }
 
 .alergeno-item.selected {
-    border-color: var(--accent);
+    border-color: var(--accent-ui);
     background: var(--accent-tint-bg);
     box-shadow: 0 0 10px var(--accent-soft);
 }
@@ -801,7 +804,7 @@ h1 svg {
     margin-bottom: 40px;
 }
 .platos-por-categoria h3 {
-    border-bottom: 2px solid var(--accent);
+    border-bottom: 2px solid var(--accent-ui);
     padding-bottom: 8px;
     margin-bottom: 15px;
     color: #ffffff;
@@ -835,13 +838,13 @@ h1 svg {
 .plato-item.dragging {
     opacity: 0.6;
     background: var(--accent-tint-bg);
-    border: 2px solid var(--accent);
+    border: 2px solid var(--accent-ui);
     box-shadow: 0 5px 20px var(--accent-shadow-strong);
     transform: scale(1.02);
 }
 
 .plato-item.drag-over {
-    border-top: 3px solid var(--accent);
+    border-top: 3px solid var(--accent-ui);
 }
 
 .plato-info {
@@ -873,7 +876,7 @@ h1 svg {
 
 .plato-precio {
     font-weight: 600;
-    color: var(--accent);
+    color: var(--accent-ui);
     white-space: nowrap;
     margin-right: 15px;
 }
@@ -908,8 +911,8 @@ h1 svg {
 
 #logoutBtn:hover {
     background-color: var(--accent-soft-alt);
-    border-color: var(--accent);
-    color: var(--accent);
+    border-color: var(--accent-ui);
+    color: var(--accent-ui);
 }
 
 .empty-state {
