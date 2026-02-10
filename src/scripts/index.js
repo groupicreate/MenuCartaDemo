@@ -355,12 +355,12 @@ function safeText(v) {
   return (v ?? "").toString();
 }
 
-function attachImageFallback(img, onFail) {
-  if (!img) return;
-  img.onerror = () => {
-    img.removeAttribute("src");
-    if (typeof onFail === "function") onFail();
-  };
+function normalizeOptionalUrl(value) {
+  const url = safeText(value).trim();
+  if (!url) return "";
+  const raw = url.toLowerCase();
+  if (raw === "null" || raw === "undefined" || raw === "nan") return "";
+  return url;
 }
 
 function pick(obj, keys) {
@@ -371,12 +371,44 @@ function pick(obj, keys) {
 }
 
 function getProfileDishPlaceholderUrl() {
-  return safeText(pick(PROFILE, PROFILE_DISH_PLACEHOLDER_KEYS)).trim();
+  return normalizeOptionalUrl(pick(PROFILE, PROFILE_DISH_PLACEHOLDER_KEYS));
 }
 
-function getDishImageUrl(plato) {
-  return safeText(pick(plato, DISH_IMAGE_KEYS)).trim() ||
-    getProfileDishPlaceholderUrl();
+function getDishImageInfo(plato) {
+  const primary = normalizeOptionalUrl(pick(plato, DISH_IMAGE_KEYS));
+  const fallback = getProfileDishPlaceholderUrl();
+  return {
+    primary,
+    fallback,
+    preferred: primary || fallback,
+  };
+}
+
+function applyDishImageWithFallback(
+  img,
+  { primary = "", fallback = "", onFinalFail = null } = {},
+) {
+  if (!img) return;
+  const main = normalizeOptionalUrl(primary);
+  const alt = normalizeOptionalUrl(fallback);
+  const initial = main || alt;
+  if (!initial) {
+    if (typeof onFinalFail === "function") onFinalFail();
+    return;
+  }
+
+  const hasDistinctFallback = !!main && !!alt && main !== alt;
+  let switchedToFallback = !hasDistinctFallback;
+  img.src = initial;
+  img.onerror = () => {
+    if (!switchedToFallback && alt) {
+      switchedToFallback = true;
+      img.src = alt;
+      return;
+    }
+    img.removeAttribute("src");
+    if (typeof onFinalFail === "function") onFinalFail();
+  };
 }
 
 function normalizeHexColor(value) {
@@ -715,14 +747,16 @@ window.addEventListener("popstate", handleBackNavigation);
 function openSheet(plato) {
   pushHistoryState({ modal: "dish" });
   dishSheetDrag?.reset();
-  const imgUrl = getDishImageUrl(plato);
-  if (imgUrl) {
+  const imgInfo = getDishImageInfo(plato);
+  if (imgInfo.preferred) {
     sheetImageWrap.style.display = "";
     const dishName = getDishName(plato);
-    sheetImage.src = imgUrl;
     sheetImage.alt = dishName ? `${dishName}` : "";
-    attachImageFallback(sheetImage, () => {
-      sheetImageWrap.style.display = "none";
+    applyDishImageWithFallback(sheetImage, {
+      ...imgInfo,
+      onFinalFail: () => {
+        sheetImageWrap.style.display = "none";
+      },
     });
   } else {
     sheetImageWrap.style.display = "none";
@@ -1195,14 +1229,16 @@ function buildDishRow(plato) {
   const right = document.createElement("div");
   right.className = "dishRight";
 
-  const imgUrl = getDishImageUrl(plato);
-  if (imgUrl) {
+  const imgInfo = getDishImageInfo(plato);
+  if (imgInfo.preferred) {
     const img = document.createElement("img");
-    img.src = imgUrl;
     img.alt = getDishName(plato);
     img.loading = "lazy";
-    attachImageFallback(img, () => {
-      right.style.display = "none";
+    applyDishImageWithFallback(img, {
+      ...imgInfo,
+      onFinalFail: () => {
+        right.style.display = "none";
+      },
     });
     right.appendChild(img);
   } else {
@@ -1272,14 +1308,16 @@ function buildSearchItemRow(plato) {
   const right = document.createElement("div");
   right.className = "dishRight";
 
-  const imgUrl = getDishImageUrl(plato);
-  if (imgUrl) {
+  const imgInfo = getDishImageInfo(plato);
+  if (imgInfo.preferred) {
     const img = document.createElement("img");
-    img.src = imgUrl;
     img.alt = getDishName(plato);
     img.loading = "lazy";
-    attachImageFallback(img, () => {
-      right.style.display = "none";
+    applyDishImageWithFallback(img, {
+      ...imgInfo,
+      onFinalFail: () => {
+        right.style.display = "none";
+      },
     });
     right.appendChild(img);
   } else {
