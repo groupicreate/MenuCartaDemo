@@ -144,6 +144,10 @@ function pickFirst(obj, keys) {
 function normalizeThemeIntensity(value) {
   const raw = safeText(value).trim().toLowerCase();
   if (raw === "suave" || raw === "medio" || raw === "vivo") return raw;
+  if (raw.startsWith("sua")) return "suave";
+  if (raw.startsWith("med")) return "medio";
+  if (raw.startsWith("viv") || raw === "fuerte" || raw === "intenso")
+    return "vivo";
   return null;
 }
 

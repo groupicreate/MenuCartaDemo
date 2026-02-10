@@ -371,6 +371,10 @@ function pick(obj, keys) {
 function normalizeThemeIntensity(value) {
   const raw = safeText(value).trim().toLowerCase();
   if (raw === "suave" || raw === "medio" || raw === "vivo") return raw;
+  if (raw.startsWith("sua")) return "suave";
+  if (raw.startsWith("med")) return "medio";
+  if (raw.startsWith("viv") || raw === "fuerte" || raw === "intenso")
+    return "vivo";
   return null;
 }
 
@@ -461,22 +465,28 @@ function applyPublicTheme(primaryColor, intensity = DEFAULT_THEME_INTENSITY) {
   const intensityMap = {
     suave: {
       frameWidth: "1px",
-      frameAlpha: 0.2,
+      frameAlpha: 0.24,
       frameShadow: 0.08,
+      frameRingWidth: "0px",
+      frameRingAlpha: 0,
       iconBg: 0.12,
       iconBorder: 0.2,
     },
     medio: {
-      frameWidth: "2.5px",
-      frameAlpha: 0.3,
-      frameShadow: 0.12,
+      frameWidth: "3px",
+      frameAlpha: 0.46,
+      frameShadow: 0.14,
+      frameRingWidth: "4px",
+      frameRingAlpha: 0.12,
       iconBg: 0.18,
       iconBorder: 0.28,
     },
     vivo: {
-      frameWidth: "4px",
-      frameAlpha: 0.42,
-      frameShadow: 0.16,
+      frameWidth: "5px",
+      frameAlpha: 0.7,
+      frameShadow: 0.2,
+      frameRingWidth: "8px",
+      frameRingAlpha: 0.2,
       iconBg: 0.24,
       iconBorder: 0.4,
     },
@@ -504,6 +514,8 @@ function applyPublicTheme(primaryColor, intensity = DEFAULT_THEME_INTENSITY) {
     "--frame-width": cfg.frameWidth,
     "--frame-border": toRgba(accentOnLight, cfg.frameAlpha),
     "--frame-shadow": toRgba(accentOnLight, cfg.frameShadow),
+    "--frame-ring-width": cfg.frameRingWidth,
+    "--frame-ring": toRgba(accentOnLight, cfg.frameRingAlpha),
     "--home-icon-bg": toRgba(accentOnLight, cfg.iconBg),
     "--home-icon-color": accentOnLight,
     "--home-icon-border": toRgba(accentOnLight, cfg.iconBorder),

@@ -21,6 +21,8 @@
   --frame-width:1px;
   --frame-border:rgba(31,31,31,.18);
   --frame-shadow:rgba(31,31,31,.08);
+  --frame-ring-width:0px;
+  --frame-ring:rgba(31,31,31,0);
   --home-icon-bg:rgba(31,31,31,.12);
   --home-icon-color:#1f1f1f;
   --home-icon-border:rgba(31,31,31,.2);
@@ -100,6 +102,7 @@ button:active,
   overflow:hidden;
   box-shadow:
     0 8px 26px rgba(0,0,0,.12),
+    0 0 0 var(--frame-ring-width) var(--frame-ring),
     0 0 0 1px var(--frame-shadow) inset;
 }
 .cover{
@@ -215,7 +218,9 @@ button:active,
   border-radius:26px 26px 18px 18px;
   padding:12px 12px;
   display:flex; align-items:center; gap:10px;
-  box-shadow:0 8px 24px rgba(0,0,0,.12);
+  box-shadow:
+    0 8px 24px rgba(0,0,0,.12),
+    0 0 0 calc(var(--frame-ring-width) * .6) var(--frame-ring);
 }
 .topbar .iconBtn{background:transparent; color:var(--text); width:40px; height:40px; border-radius:12px}
 .topbarTitle{flex:1; font-weight:800; font-size:18px; letter-spacing:-.01em}
@@ -226,7 +231,9 @@ button:active,
   border:var(--frame-width) solid var(--frame-border);
   border-radius:18px;
   overflow:hidden;
-  box-shadow:0 8px 24px rgba(0,0,0,.10);
+  box-shadow:
+    0 8px 24px rgba(0,0,0,.10),
+    0 0 0 calc(var(--frame-ring-width) * .5) var(--frame-ring);
   margin-top:10px;
 }
 
