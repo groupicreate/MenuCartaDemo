@@ -216,7 +216,19 @@
             <div class="grid-2">
               <div class="field">
                 <label>Portada (URL)</label>
-                <input id="perfilPortadaUrl" placeholder="https://..." />
+                <div class="media-url-actions">
+                  <input id="perfilPortadaUrl" placeholder="https://..." />
+                  <button
+                    type="button"
+                    class="secondaryBtn"
+                    id="perfilPortadaGaleriaBtn"
+                  >
+                    Mis fotos
+                  </button>
+                  <button type="button" class="cancel" id="perfilPortadaClearBtn">
+                    Quitar
+                  </button>
+                </div>
               </div>
               <div class="field">
                 <label>Portada (subir imagen)</label>
@@ -242,7 +254,19 @@
             <div class="grid-2">
               <div class="field">
                 <label>Logo / emblema (URL)</label>
-                <input id="perfilLogoUrl" placeholder="https://..." />
+                <div class="media-url-actions">
+                  <input id="perfilLogoUrl" placeholder="https://..." />
+                  <button
+                    type="button"
+                    class="secondaryBtn"
+                    id="perfilLogoGaleriaBtn"
+                  >
+                    Mis fotos
+                  </button>
+                  <button type="button" class="cancel" id="perfilLogoClearBtn">
+                    Quitar
+                  </button>
+                </div>
                 <small class="hint">
                   Se muestra sobre la portada en la carta pública.
                 </small>
@@ -271,7 +295,23 @@
             <div class="grid-2">
               <div class="field">
                 <label>Imagen por defecto de platos (URL)</label>
-                <input id="perfilPlatoDefaultUrl" placeholder="https://..." />
+                <div class="media-url-actions">
+                  <input id="perfilPlatoDefaultUrl" placeholder="https://..." />
+                  <button
+                    type="button"
+                    class="secondaryBtn"
+                    id="perfilPlatoDefaultGaleriaBtn"
+                  >
+                    Mis fotos
+                  </button>
+                  <button
+                    type="button"
+                    class="cancel"
+                    id="perfilPlatoDefaultClearBtn"
+                  >
+                    Quitar
+                  </button>
+                </div>
                 <small class="hint">
                   Se usa solo cuando un plato no tiene imagen propia.
                 </small>
@@ -301,6 +341,44 @@
 
     <div class="form-actions">
       <button id="guardarPerfilBtn">Guardar Perfil</button>
+    </div>
+  </div>
+
+  <div id="profileImageGalleryModal" class="imodal" aria-hidden="true">
+    <button
+      type="button"
+      class="imodal-backdrop"
+      id="profileImageGalleryBackdrop"
+      aria-label="Cerrar"
+    ></button>
+    <div
+      class="imodal-card imodal-card--gallery"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Galería de imágenes"
+    >
+      <div class="imodal-header">
+        <h3 id="profileImageGalleryTitle" style="margin: 0">🖼️ Mis imágenes</h3>
+        <button
+          type="button"
+          class="imodal-close"
+          id="profileImageGalleryClose"
+          aria-label="Cerrar"
+        >
+          ✖
+        </button>
+      </div>
+
+      <p class="hint" style="margin-top: 8px">
+        Selecciona una imagen para usarla aquí o bórrala si ya no la necesitas.
+      </p>
+
+      <div class="plato-gallery-toolbar">
+        <button type="button" class="secondaryBtn" id="profileImageGalleryRefresh">
+          Actualizar
+        </button>
+      </div>
+      <div id="profileImageGalleryGrid" class="plato-gallery-grid"></div>
     </div>
   </div>
 </div>

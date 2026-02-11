@@ -323,6 +323,60 @@ button:active,
     flex: 0 0 auto;
 }
 
+.media-url-actions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+}
+
+.form-box .media-url-actions .secondaryBtn,
+.form-box .media-url-actions .cancel {
+    min-height: 40px;
+    padding: 8px 12px;
+    font-size: 13px;
+    border-radius: 10px;
+    box-shadow: none;
+}
+
+.form-box .media-url-actions .secondaryBtn {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+}
+
+.form-box .media-url-actions .secondaryBtn:hover {
+    background: var(--accent-soft-alt);
+    color: var(--accent-ui);
+    border-color: var(--accent-ui);
+}
+
+.form-box .media-url-actions .cancel {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+}
+
+.form-box .media-url-actions .cancel:hover {
+    background: #1f1f1f;
+    border-color: var(--accent-ui);
+    color: var(--accent-ui);
+}
+
+@media (min-width: 980px) {
+    .media-url-actions {
+        grid-template-columns: minmax(0, 1fr) auto auto;
+        align-items: center;
+    }
+
+    .media-url-actions .secondaryBtn,
+    .media-url-actions .cancel {
+        min-height: 42px;
+        padding: 8px 12px;
+        font-size: 13px;
+        white-space: nowrap;
+    }
+}
+
 .form-actions {
     display: flex;
     gap: 10px;
