@@ -35,15 +35,27 @@
             </small>
           </div>
 
-          <div class="grid-2">
-            <div class="field">
-              <label>Imagen (URL)</label>
-              <input id="platoImagenUrl" placeholder="https://..." />
+          <div class="field plato-image-field">
+            <label>Imagen del plato</label>
+            <div class="plato-image-actions">
+              <button type="button" class="secondaryBtn" id="platoImagenGaleriaBtn">
+                Elegir de mis fotos
+              </button>
+              <button type="button" class="secondaryBtn" id="platoImagenUploadBtn">
+                Subir nueva imagen
+              </button>
+              <button type="button" class="cancel" id="platoImagenClearBtn">
+                Quitar imagen
+              </button>
             </div>
-            <div class="field">
-              <label>Imagen (subir)</label>
-              <input id="platoImagenFile" type="file" accept="image/*" />
-            </div>
+            <input
+              id="platoImagenFile"
+              class="sr-only-file"
+              type="file"
+              accept="image/*"
+            />
+            <input id="platoImagenUrl" placeholder="Imagen seleccionada" readonly />
+            <small id="platoImagenStatus" class="hint">Sin imagen seleccionada.</small>
           </div>
           <div id="platoImagenPreview" class="image-preview" style="display: none"></div>
 
@@ -74,4 +86,42 @@
   </div>
 
   <div id="platosContainer"></div>
+
+  <div id="platoImagenGalleryModal" class="imodal" aria-hidden="true">
+    <button
+      type="button"
+      class="imodal-backdrop"
+      id="platoImagenGalleryBackdrop"
+      aria-label="Cerrar"
+    ></button>
+    <div
+      class="imodal-card imodal-card--gallery"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Galería de imágenes de platos"
+    >
+      <div class="imodal-header">
+        <h3 style="margin: 0">🖼️ Mis imágenes de platos</h3>
+        <button
+          type="button"
+          class="imodal-close"
+          id="platoImagenGalleryClose"
+          aria-label="Cerrar"
+        >
+          ✖
+        </button>
+      </div>
+
+      <p class="hint" style="margin-top: 8px">
+        Selecciona una imagen ya subida para reutilizarla en este plato.
+      </p>
+
+      <div class="plato-gallery-toolbar">
+        <button type="button" class="secondaryBtn" id="platoImagenGalleryRefresh">
+          Actualizar
+        </button>
+      </div>
+      <div id="platoImagenGalleryGrid" class="plato-gallery-grid"></div>
+    </div>
+  </div>
 </div>

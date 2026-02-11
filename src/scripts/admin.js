@@ -37,6 +37,22 @@ const MENU_MULTI_CATEGORY_KEYS = [
   "categories_ids",
   "category_ids",
 ];
+const DISH_GALLERY_FOLDERS = ["platos", "platos-default", "portadas", "logos"];
+const STORAGE_FOLDER_LABELS = {
+  platos: "Platos",
+  "platos-default": "Platos default",
+  portadas: "Portadas",
+  logos: "Logos",
+};
+const IMAGE_EXTENSIONS = [
+  ".jpg",
+  ".jpeg",
+  ".png",
+  ".webp",
+  ".gif",
+  ".avif",
+  ".svg",
+];
 
 let user = null;
 
@@ -73,6 +89,8 @@ let ALL_PLATOS = [];
 // Sortable instances (para destruir/recrear al re-render)
 let sortableCategorias = null;
 let sortablePlatos = null;
+let platoPreviewObjectUrl = null;
+let platoGalleryImages = [];
 
 // ========== DOM (LOGIN) ==========
 const loginForm = document.getElementById("login-form");
@@ -137,12 +155,25 @@ const platoSubcategoria = document.getElementById("platoSubcategoria");
 const platoCategoria = document.getElementById("platoCategoria");
 const platoImagenUrl = document.getElementById("platoImagenUrl");
 const platoImagenFile = document.getElementById("platoImagenFile");
+const platoImagenUploadBtn = document.getElementById("platoImagenUploadBtn");
+const platoImagenGaleriaBtn = document.getElementById("platoImagenGaleriaBtn");
+const platoImagenClearBtn = document.getElementById("platoImagenClearBtn");
+const platoImagenStatus = document.getElementById("platoImagenStatus");
 const platoImagenPreview = document.getElementById("platoImagenPreview");
 const guardarPlatoBtn = document.getElementById("guardarPlatoBtn");
 const cancelPlatoBtn = document.getElementById("cancelPlatoBtn");
 const platoFormTitle = document.getElementById("plato-form-title");
 const platoEditAside = document.getElementById("platoEditAside");
 const platoEditAsideBody = document.getElementById("platoEditAsideBody");
+const platoImagenGalleryModal = document.getElementById("platoImagenGalleryModal");
+const platoImagenGalleryBackdrop = document.getElementById(
+  "platoImagenGalleryBackdrop",
+);
+const platoImagenGalleryClose = document.getElementById("platoImagenGalleryClose");
+const platoImagenGalleryRefresh = document.getElementById(
+  "platoImagenGalleryRefresh",
+);
+const platoImagenGalleryGrid = document.getElementById("platoImagenGalleryGrid");
 
 // PLATOS (toolbar)
 const platosCategoriaFilter = document.getElementById("platosCategoriaFilter");
@@ -380,6 +411,201 @@ function showPreview(el, url) {
   }
   el.style.display = "";
   el.innerHTML = `<img src="${url}" alt="preview" style="max-width:100%;border-radius:12px;display:block" onerror="this.style.display='none';this.parentElement.style.background='transparent'"/>`;
+}
+
+function syncModalBodyLock() {
+  const hasOpenModal =
+    placeIdModal?.getAttribute("aria-hidden") === "false" ||
+    platoImagenGalleryModal?.getAttribute("aria-hidden") === "false";
+  document.body.style.overflow = hasOpenModal ? "hidden" : "";
+}
+
+function revokePlatoPreviewObjectUrl() {
+  if (!platoPreviewObjectUrl) return;
+  URL.revokeObjectURL(platoPreviewObjectUrl);
+  platoPreviewObjectUrl = null;
+}
+
+function setPlatoImageStatus(message, { error = false } = {}) {
+  if (!platoImagenStatus) return;
+  platoImagenStatus.textContent = message;
+  platoImagenStatus.classList.toggle("is-error", Boolean(error));
+}
+
+function setPlatoImageFromUrl(url, { clearFile = true, status = null } = {}) {
+  const clean = safeText(url).trim();
+  revokePlatoPreviewObjectUrl();
+  if (platoImagenUrl) platoImagenUrl.value = clean;
+  if (clearFile && platoImagenFile) platoImagenFile.value = "";
+  showPreview(platoImagenPreview, clean || null);
+  if (status) {
+    setPlatoImageStatus(status);
+  } else {
+    setPlatoImageStatus(
+      clean ? "Imagen seleccionada para el plato." : "Sin imagen seleccionada.",
+    );
+  }
+}
+
+function setPlatoImageFromFile(file) {
+  if (!file) return;
+  revokePlatoPreviewObjectUrl();
+  platoPreviewObjectUrl = URL.createObjectURL(file);
+  showPreview(platoImagenPreview, platoPreviewObjectUrl);
+  setPlatoImageStatus(`Archivo listo para subir: ${file.name}`);
+}
+
+function isImageFileName(name) {
+  const lower = safeText(name).trim().toLowerCase();
+  if (!lower || lower.endsWith("/")) return false;
+  return IMAGE_EXTENSIONS.some((ext) => lower.endsWith(ext));
+}
+
+async function listStorageImagesInFolder(prefix) {
+  const images = [];
+  const limit = 100;
+  let offset = 0;
+
+  while (true) {
+    const { data, error } = await supabase.storage.from(STORAGE_BUCKET).list(prefix, {
+      limit,
+      offset,
+      sortBy: { column: "name", order: "desc" },
+    });
+
+    if (error) throw error;
+    const page = Array.isArray(data) ? data : [];
+
+    page
+      .filter((item) => isImageFileName(item?.name))
+      .forEach((item) => {
+        const path = `${prefix}/${item.name}`;
+        const { data: publicData } = supabase.storage
+          .from(STORAGE_BUCKET)
+          .getPublicUrl(path);
+        const url = safeText(publicData?.publicUrl).trim();
+        if (!url) return;
+        images.push({
+          name: item.name,
+          url,
+          updatedAt: item?.updated_at || item?.created_at || "",
+          folder: prefix.split("/").slice(-1)[0] || "platos",
+        });
+      });
+
+    if (page.length < limit) break;
+    offset += limit;
+  }
+
+  return images;
+}
+
+async function fetchDishGalleryImages() {
+  const currentUser = await requireUser();
+  const userRoot = safeText(currentUser?.id).trim();
+  if (!userRoot) return [];
+
+  const allImages = [];
+  for (const folder of DISH_GALLERY_FOLDERS) {
+    const prefix = `${userRoot}/${folder}`;
+    try {
+      const folderImages = await listStorageImagesInFolder(prefix);
+      allImages.push(...folderImages);
+    } catch (error) {
+      const msg = safeText(error?.message).toLowerCase();
+      if (msg.includes("not found")) continue;
+      throw error;
+    }
+  }
+
+  const uniqueByUrl = [];
+  const seen = new Set();
+  allImages
+    .sort((a, b) => safeText(b.updatedAt).localeCompare(safeText(a.updatedAt)))
+    .forEach((item) => {
+      if (seen.has(item.url)) return;
+      seen.add(item.url);
+      uniqueByUrl.push(item);
+    });
+
+  return uniqueByUrl;
+}
+
+function renderPlatoGalleryGrid(items) {
+  if (!platoImagenGalleryGrid) return;
+  platoImagenGalleryGrid.innerHTML = "";
+
+  if (!items.length) {
+    const empty = document.createElement("div");
+    empty.className = "plato-gallery-empty";
+    empty.textContent =
+      "No hay imágenes en tu galería todavía. Sube una imagen y luego podrás reutilizarla.";
+    platoImagenGalleryGrid.appendChild(empty);
+    return;
+  }
+
+  const selectedUrl = safeText(platoImagenUrl?.value).trim();
+  items.forEach((item) => {
+    const card = document.createElement("button");
+    card.type = "button";
+    card.className = "plato-gallery-item";
+    if (item.url === selectedUrl) card.classList.add("is-selected");
+    card.title = item.name;
+
+    const img = document.createElement("img");
+    img.src = item.url;
+    img.alt = item.name;
+    img.loading = "lazy";
+    img.decoding = "async";
+
+    const caption = document.createElement("span");
+    caption.className = "plato-gallery-name";
+    caption.textContent = item.name;
+
+    const meta = document.createElement("small");
+    meta.className = "plato-gallery-meta";
+    meta.textContent = STORAGE_FOLDER_LABELS[item.folder] || safeText(item.folder);
+
+    card.appendChild(img);
+    card.appendChild(caption);
+    card.appendChild(meta);
+    card.addEventListener("click", () => {
+      setPlatoImageFromUrl(item.url, {
+        status: "Imagen seleccionada desde tu galería.",
+      });
+      closePlatoImageGalleryModal();
+    });
+
+    platoImagenGalleryGrid.appendChild(card);
+  });
+}
+
+async function refreshPlatoImageGallery() {
+  if (!platoImagenGalleryGrid) return;
+  platoImagenGalleryGrid.innerHTML =
+    '<div class="plato-gallery-empty">Cargando imágenes...</div>';
+
+  try {
+    platoGalleryImages = await fetchDishGalleryImages();
+    renderPlatoGalleryGrid(platoGalleryImages);
+  } catch (error) {
+    console.warn("Galería platos:", error?.message || error);
+    platoImagenGalleryGrid.innerHTML =
+      '<div class="plato-gallery-empty">No se pudieron cargar tus imágenes. Revisa permisos de Storage y vuelve a intentar.</div>';
+  }
+}
+
+function openPlatoImageGalleryModal() {
+  if (!platoImagenGalleryModal) return;
+  platoImagenGalleryModal.setAttribute("aria-hidden", "false");
+  syncModalBodyLock();
+  void refreshPlatoImageGallery();
+}
+
+function closePlatoImageGalleryModal() {
+  if (!platoImagenGalleryModal) return;
+  platoImagenGalleryModal.setAttribute("aria-hidden", "true");
+  syncModalBodyLock();
 }
 
 function normalizeAllergenKey(v) {
@@ -829,7 +1055,7 @@ document.getElementById("guardarPerfilBtn").onclick = async () => {
 function openPlaceIdModal() {
   if (!placeIdModal) return;
   placeIdModal.setAttribute("aria-hidden", "false");
-  document.body.style.overflow = "hidden";
+  syncModalBodyLock();
   // reset
   if (placeSearchInput) placeSearchInput.value = "";
   if (placeResultName) placeResultName.textContent = "-";
@@ -844,7 +1070,7 @@ function openPlaceIdModal() {
 function closePlaceIdModal() {
   if (!placeIdModal) return;
   placeIdModal.setAttribute("aria-hidden", "true");
-  document.body.style.overflow = "";
+  syncModalBodyLock();
 }
 
 let __placeAutocompleteInit = false;
@@ -888,10 +1114,12 @@ buscarPlaceIdBtn?.addEventListener("click", () => {
 placeIdModalBackdrop?.addEventListener("click", closePlaceIdModal);
 placeIdModalClose?.addEventListener("click", closePlaceIdModal);
 document.addEventListener("keydown", (e) => {
-  if (
-    e.key === "Escape" &&
-    placeIdModal?.getAttribute("aria-hidden") === "false"
-  ) {
+  if (e.key !== "Escape") return;
+  if (platoImagenGalleryModal?.getAttribute("aria-hidden") === "false") {
+    closePlatoImageGalleryModal();
+    return;
+  }
+  if (placeIdModal?.getAttribute("aria-hidden") === "false") {
     closePlaceIdModal();
   }
 });
@@ -1123,26 +1351,45 @@ function resetPlatoForm() {
   Array.from(platoCategoria?.options || []).forEach((opt) => {
     opt.selected = false;
   });
-  platoImagenUrl.value = "";
-  platoImagenFile.value = "";
+  setPlatoImageFromUrl("", { status: "Sin imagen seleccionada." });
   platoFormTitle.textContent = "➕ Nuevo Plato";
   cancelPlatoBtn.style.display = "none";
   alergenosSeleccionados = [];
   cargarAlergenosGrid();
-  showPreview(platoImagenPreview, null);
   if (platoEditAside) platoEditAside.style.display = "none";
   if (platoEditAsideBody) platoEditAsideBody.innerHTML = "";
 }
 
 platoImagenUrl?.addEventListener("input", () => {
-  showPreview(platoImagenPreview, platoImagenUrl.value.trim());
+  setPlatoImageFromUrl(platoImagenUrl.value, { clearFile: false });
 });
 
 platoImagenFile?.addEventListener("change", () => {
   const f = platoImagenFile.files?.[0];
-  if (!f) return;
-  const blob = URL.createObjectURL(f);
-  showPreview(platoImagenPreview, blob);
+  if (!f) {
+    const keepUrl = safeText(platoImagenUrl?.value).trim();
+    if (keepUrl) showPreview(platoImagenPreview, keepUrl);
+    return;
+  }
+  setPlatoImageFromFile(f);
+});
+
+platoImagenUploadBtn?.addEventListener("click", () => {
+  platoImagenFile?.click();
+});
+
+platoImagenGaleriaBtn?.addEventListener("click", () => {
+  openPlatoImageGalleryModal();
+});
+
+platoImagenClearBtn?.addEventListener("click", () => {
+  setPlatoImageFromUrl("", { status: "Imagen eliminada del plato." });
+});
+
+platoImagenGalleryBackdrop?.addEventListener("click", closePlatoImageGalleryModal);
+platoImagenGalleryClose?.addEventListener("click", closePlatoImageGalleryModal);
+platoImagenGalleryRefresh?.addEventListener("click", () => {
+  void refreshPlatoImageGallery();
 });
 
 cancelPlatoBtn.onclick = resetPlatoForm;
@@ -1259,8 +1506,11 @@ function editarPlato(id) {
   Array.from(platoCategoria?.options || []).forEach((opt) => {
     opt.selected = selectedCatIds.has(String(opt.value));
   });
-  platoImagenUrl.value = p.imagen_url || "";
-  showPreview(platoImagenPreview, p.imagen_url || null);
+  setPlatoImageFromUrl(p.imagen_url || "", {
+    status: p.imagen_url
+      ? "Mostrando imagen actual del plato."
+      : "Este plato no tiene imagen.",
+  });
 
   const existing = Array.isArray(p.alergenos) ? p.alergenos : [];
   alergenosSeleccionados = existing
@@ -1367,9 +1617,9 @@ guardarPlatoBtn.onclick = async () => {
     const f = platoImagenFile.files?.[0];
     if (f) {
       imgFinal = await uploadToStorage(f, "platos");
-      platoImagenUrl.value = imgFinal;
-      platoImagenFile.value = "";
-      showPreview(platoImagenPreview, imgFinal);
+      setPlatoImageFromUrl(imgFinal, {
+        status: "Imagen subida y guardada para el plato.",
+      });
     }
 
     const payload = {
