@@ -31,6 +31,12 @@ const PROFILE_LOGO_KEYS = [
   "logo",
   "emblema",
 ];
+const MENU_MULTI_CATEGORY_KEYS = [
+  "categorias_ids",
+  "categoria_ids",
+  "categories_ids",
+  "category_ids",
+];
 
 let user = null;
 
@@ -153,6 +159,43 @@ function pickFirst(obj, keys) {
     if (value != null && value !== "") return value;
   }
   return null;
+}
+
+function parseCategoryIds(rawValue) {
+  const toNum = (v) => Number(v);
+  const uniqNums = (values) =>
+    [...new Set(values.map(toNum).filter((n) => Number.isFinite(n)))];
+
+  if (Array.isArray(rawValue)) return uniqNums(rawValue);
+  if (typeof rawValue === "number" && Number.isFinite(rawValue)) return [rawValue];
+
+  const raw = safeText(rawValue).trim();
+  if (!raw) return [];
+
+  try {
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) return uniqNums(parsed);
+  } catch {}
+
+  if (raw.includes(",")) {
+    return uniqNums(
+      raw
+        .split(",")
+        .map((p) => p.trim())
+        .filter(Boolean),
+    );
+  }
+
+  const single = Number(raw);
+  return Number.isFinite(single) ? [single] : [];
+}
+
+function getPlatoCategoryIds(plato) {
+  const multiRaw = pickFirst(plato, MENU_MULTI_CATEGORY_KEYS);
+  const multi = parseCategoryIds(multiRaw);
+  if (multi.length) return multi;
+  const single = Number(plato?.categoria_id);
+  return Number.isFinite(single) ? [single] : [];
 }
 
 function normalizeHexColor(value) {
@@ -958,6 +1001,9 @@ async function cargarCategorias() {
 }
 
 function actualizarSelectCategorias(categorias) {
+  const prevSelected = new Set(
+    Array.from(platoCategoria?.selectedOptions || []).map((o) => String(o.value)),
+  );
   platoCategoria.innerHTML = "";
   if (!categorias || !categorias.length) {
     const opt = document.createElement("option");
@@ -970,6 +1016,7 @@ function actualizarSelectCategorias(categorias) {
     const opt = document.createElement("option");
     opt.value = c.id;
     opt.textContent = c.nombre;
+    opt.selected = prevSelected.has(String(c.id));
     platoCategoria.appendChild(opt);
   });
 }
@@ -1073,6 +1120,9 @@ function resetPlatoForm() {
   platoDescripcion.value = "";
   platoPrecio.value = "";
   platoSubcategoria.value = "";
+  Array.from(platoCategoria?.options || []).forEach((opt) => {
+    opt.selected = false;
+  });
   platoImagenUrl.value = "";
   platoImagenFile.value = "";
   platoFormTitle.textContent = "➕ Nuevo Plato";
@@ -1122,7 +1172,8 @@ function renderPlatosFiltrados() {
   const q = (platosSearch?.value || "").trim().toLowerCase();
 
   const filtered = ALL_PLATOS.filter((p) => {
-    const okCat = !catId || Number(p.categoria_id) === catId;
+    const cats = getPlatoCategoryIds(p);
+    const okCat = !catId || cats.includes(catId);
     const okQ =
       !q ||
       (p.plato || "").toLowerCase().includes(q) ||
@@ -1156,7 +1207,9 @@ function renderPlatosList(platos) {
       ? `<img src="${p.imagen_url}" alt="" style="width:52px;height:52px;object-fit:cover;border-radius:10px;margin-right:10px" onerror="this.style.display='none';this.parentElement.style.background='transparent'"/>`
       : "";
 
-    const catName = categoriaNombreById(p.categoria_id);
+    const catNames = getPlatoCategoryIds(p)
+      .map((id) => categoriaNombreById(id))
+      .filter(Boolean);
 
     div.innerHTML = `
       <span class="drag-handle">☰</span>
@@ -1165,7 +1218,7 @@ function renderPlatosList(platos) {
         <div class="plato-nombre">${safeText(p.plato)} ${p.activo ? "" : "(Oculto)"}</div>
         <div class="plato-desc">${p.descripcion ? safeText(p.descripcion) : ""}</div>
         <div class="plato-meta">
-          ${catName ? `<span class="badge-cat">${catName}</span>` : ""}
+          ${catNames.map((name) => `<span class="badge-cat">${name}</span>`).join("")}
           ${p.subcategoria ? `<span class="chipmini">${safeText(p.subcategoria)}</span>` : ""}
         </div>
       </div>
@@ -1202,7 +1255,10 @@ function editarPlato(id) {
   platoDescripcion.value = p.descripcion || "";
   platoPrecio.value = p.precio ?? "";
   platoSubcategoria.value = p.subcategoria || "";
-  platoCategoria.value = p.categoria_id ?? "";
+  const selectedCatIds = new Set(getPlatoCategoryIds(p).map((id) => String(id)));
+  Array.from(platoCategoria?.options || []).forEach((opt) => {
+    opt.selected = selectedCatIds.has(String(opt.value));
+  });
   platoImagenUrl.value = p.imagen_url || "";
   showPreview(platoImagenPreview, p.imagen_url || null);
 
@@ -1216,13 +1272,15 @@ function editarPlato(id) {
 
   // Aside "Editando"
   if (platoEditAside && platoEditAsideBody) {
-    const catName = categoriaNombreById(p.categoria_id);
+    const catNames = getPlatoCategoryIds(p)
+      .map((id) => categoriaNombreById(id))
+      .filter(Boolean);
     const thumb = p.imagen_url
       ? `<img class="edit-aside-thumb" src="${p.imagen_url}" alt="" onerror="this.style.display='none';this.parentElement.style.background='transparent'">`
       : `<div class="edit-aside-thumb"></div>`;
 
     const tags = [];
-    if (catName) tags.push(`<span class="edit-tag">${catName}</span>`);
+    catNames.forEach((catName) => tags.push(`<span class="edit-tag">${catName}</span>`));
     if (p.subcategoria)
       tags.push(`<span class="edit-tag">${safeText(p.subcategoria)}</span>`);
     if (p.precio != null)
@@ -1283,7 +1341,7 @@ function makeSortablePlatos(container) {
         const plato = ALL_PLATOS.find((p) => Number(p.id) === Number(id));
         if (!plato) continue;
 
-        if (!catId || Number(plato.categoria_id) === catId) {
+        if (!catId || getPlatoCategoryIds(plato).includes(catId)) {
           await db.from("Menu").update({ orden: i }).eq("id", id);
         }
       }
@@ -1297,8 +1355,11 @@ guardarPlatoBtn.onclick = async () => {
   const nombre = platoNombre.value.trim();
   if (!nombre) return alert("Pon un nombre");
 
-  const catId = platoCategoria.value ? Number(platoCategoria.value) : null;
-  if (!catId) return alert("Selecciona una categoría");
+  const selectedCatIds = Array.from(platoCategoria?.selectedOptions || [])
+    .map((opt) => Number(opt.value))
+    .filter((n) => Number.isFinite(n));
+  const primaryCatId = selectedCatIds[0] || null;
+  if (!primaryCatId) return alert("Selecciona al menos una categoría");
 
   try {
     const currentUser = await requireUser();
@@ -1315,7 +1376,7 @@ guardarPlatoBtn.onclick = async () => {
       plato: nombre,
       descripcion: platoDescripcion.value.trim() || null,
       precio: platoPrecio.value !== "" ? Number(platoPrecio.value) : null,
-      categoria_id: catId,
+      categoria_id: primaryCatId,
       subcategoria: platoSubcategoria.value.trim() || null,
       imagen_url: imgFinal || null,
       alergenos: alergenosSeleccionados,
@@ -1323,12 +1384,94 @@ guardarPlatoBtn.onclick = async () => {
     };
 
     const id = editPlatoId.value;
-    const { error } = id
-      ? await db.from("Menu").update(payload).eq("id", id)
-      : await db
-          .from("Menu")
-          .insert({ ...payload, activo: true, orden: 0 });
+    const upsertMenu = (writePayload) =>
+      id
+        ? db.from("Menu").update(writePayload).eq("id", id)
+        : db
+            .from("Menu")
+            .insert({ ...writePayload, activo: true, orden: 0 });
 
+    const isOptionalMenuCategoriesError = (err) => {
+      const msg = safeText(err?.message).toLowerCase();
+      const mentionsCategory =
+        msg.includes("categ") ||
+        msg.includes("category") ||
+        msg.includes("categories");
+      const isMissingCol =
+        msg.includes("column") ||
+        msg.includes("does not exist") ||
+        msg.includes("schema cache") ||
+        msg.includes("unknown");
+      const isTypeIssue =
+        msg.includes("invalid input syntax") ||
+        msg.includes("malformed array") ||
+        msg.includes("is of type") ||
+        msg.includes("cannot cast");
+      return mentionsCategory && (isMissingCol || isTypeIssue);
+    };
+
+    const buildMenuCategoryCandidates = (basePayload) => {
+      const candidates = [];
+      const seen = new Set();
+      const addCandidate = (candidatePayload) => {
+        const signature = JSON.stringify(
+          Object.entries(candidatePayload).sort(([a], [b]) =>
+            a.localeCompare(b),
+          ),
+        );
+        if (seen.has(signature)) return;
+        seen.add(signature);
+        candidates.push(candidatePayload);
+      };
+
+      for (const key of MENU_MULTI_CATEGORY_KEYS) {
+        addCandidate({
+          ...basePayload,
+          [key]: selectedCatIds,
+        });
+      }
+      for (const key of MENU_MULTI_CATEGORY_KEYS) {
+        addCandidate({
+          ...basePayload,
+          [key]: selectedCatIds.join(","),
+        });
+      }
+      for (const key of MENU_MULTI_CATEGORY_KEYS) {
+        addCandidate({
+          ...basePayload,
+          [key]: JSON.stringify(selectedCatIds),
+        });
+      }
+      return candidates;
+    };
+
+    let error = null;
+    let categorySaved = false;
+    for (const categoryPayload of buildMenuCategoryCandidates(payload)) {
+      const { error: categoryErr } = await upsertMenu(categoryPayload);
+      if (!categoryErr) {
+        categorySaved = true;
+        error = null;
+        break;
+      }
+      if (!isOptionalMenuCategoriesError(categoryErr)) {
+        error = categoryErr;
+        break;
+      }
+      error = categoryErr;
+    }
+
+    if (!categorySaved && !error) {
+      const { error: fallbackErr } = await upsertMenu(payload);
+      error = fallbackErr || null;
+    } else if (!categorySaved && isOptionalMenuCategoriesError(error)) {
+      console.warn(
+        "Menu sin columna compatible para múltiples categorías. Guardando con categoría principal.",
+        error.message,
+      );
+      const { error: fallbackErr } = await upsertMenu(payload);
+      error = fallbackErr || null;
+    }
     if (error) throw error;
 
     resetPlatoForm();

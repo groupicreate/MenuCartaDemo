@@ -479,6 +479,18 @@ button:active,
     background: #0f0f0f;
 }
 
+#platoImagenPreview {
+    width: min(100%, 560px);
+    height: clamp(140px, 20vw, 240px);
+}
+
+#platoImagenPreview img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background: #0f0f0f;
+}
+
 @media (max-width: 640px) {
     #perfilPortadaPreview {
         height: 150px;
@@ -490,6 +502,10 @@ button:active,
 
     #perfilLogoPreview {
         height: 96px;
+    }
+
+    #platoImagenPreview {
+        height: 140px;
     }
 }
 
@@ -769,6 +785,17 @@ h1 svg {
     color: var(--text);
 }
 
+#platoCategoria[multiple] {
+    min-height: 150px;
+    padding: 8px;
+}
+
+#platoCategoria[multiple] option {
+    padding: 8px 10px;
+    border-radius: 8px;
+    margin-bottom: 4px;
+}
+
 .form-box input[type="file"] {
     min-height: 46px;
     padding: 8px 10px;
@@ -849,6 +876,11 @@ h1 svg {
         min-height: 48px;
         padding: 12px 14px;
         font-size: 15px;
+    }
+
+    #platoCategoria[multiple] {
+        min-height: 184px;
+        padding: 10px;
     }
 
     .form-box input[type="file"] {

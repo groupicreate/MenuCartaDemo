@@ -128,6 +128,12 @@ const PROFILE_LOGO_KEYS = [
   "emblema",
 ];
 const DISH_IMAGE_KEYS = ["imagen_url", "image_url", "foto_url", "img_url"];
+const DISH_MULTI_CATEGORY_KEYS = [
+  "categorias_ids",
+  "categoria_ids",
+  "categories_ids",
+  "category_ids",
+];
 
 // =============================
 // Utils
@@ -370,6 +376,54 @@ function normalizeOptionalUrl(value) {
   const raw = url.toLowerCase();
   if (raw === "null" || raw === "undefined" || raw === "nan") return "";
   return url;
+}
+
+function parseCategoryIds(rawValue) {
+  const toNum = (v) => Number(v);
+  const uniqNums = (values) =>
+    [...new Set(values.map(toNum).filter((n) => Number.isFinite(n)))];
+
+  if (Array.isArray(rawValue)) return uniqNums(rawValue);
+  if (typeof rawValue === "number" && Number.isFinite(rawValue)) return [rawValue];
+
+  const raw = safeText(rawValue).trim();
+  if (!raw) return [];
+
+  try {
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) return uniqNums(parsed);
+  } catch {}
+
+  if (raw.includes(",")) {
+    return uniqNums(
+      raw
+        .split(",")
+        .map((p) => p.trim())
+        .filter(Boolean),
+    );
+  }
+
+  const single = Number(raw);
+  return Number.isFinite(single) ? [single] : [];
+}
+
+function getDishCategoryIds(plato) {
+  const multiRaw = pick(plato, DISH_MULTI_CATEGORY_KEYS);
+  const multi = parseCategoryIds(multiRaw);
+  if (multi.length) return multi;
+  const single = Number(plato?.categoria_id);
+  return Number.isFinite(single) ? [single] : [];
+}
+
+function getDishPrimaryCategoryId(plato) {
+  const ids = getDishCategoryIds(plato);
+  return ids.length ? ids[0] : null;
+}
+
+function platoInCategory(plato, catId) {
+  const target = Number(catId);
+  if (!Number.isFinite(target)) return false;
+  return getDishCategoryIds(plato).includes(target);
 }
 
 function pick(obj, keys) {
@@ -942,7 +996,7 @@ function renderHome() {
   homeCategories.innerHTML = "";
 
   const catsWithItems = CATEGORIAS.filter((c) =>
-    PLATOS.some((p) => String(p.categoria_id) === String(c.id)),
+    PLATOS.some((p) => platoInCategory(p, c.id)),
   );
   if (!catsWithItems.length) {
     const p = document.createElement("p");
@@ -976,9 +1030,7 @@ function renderSubcatChips(catId) {
   subcatChips.innerHTML = "";
   ACTIVE_SUBCAT = ACTIVE_SUBCAT || "all";
 
-  const platosCat = PLATOS.filter(
-    (p) => String(p.categoria_id) === String(catId),
-  );
+  const platosCat = PLATOS.filter((p) => platoInCategory(p, catId));
   const subcats = Array.from(
     new Set(
       platosCat
@@ -1118,8 +1170,9 @@ function renderSearchDropdown() {
 }
 
 function goToItemFromSearch(plato) {
-  const catId = String(plato.categoria_id);
+  const catId = String(getDishPrimaryCategoryId(plato) || "");
   const subcatRaw = safeText(getDishSubcat(plato)).trim();
+  if (!catId) return;
 
   ACTIVE_CAT_ID = catId;
   ACTIVE_SUBCAT = subcatRaw || "all";
@@ -1150,7 +1203,7 @@ function renderDishList(catId) {
   dishList.innerHTML = "";
 
   const platosCat = PLATOS.filter(
-    (p) => String(p.categoria_id) === String(catId),
+    (p) => platoInCategory(p, catId),
   )
     .filter((p) => {
       if (ACTIVE_SUBCAT === "all") return true;
@@ -1171,8 +1224,7 @@ function renderDishList(catId) {
 
   // Si existen subcategorías, pintamos separadores por grupo (como NordQR)
   const hasSubcats = PLATOS.some(
-    (p) =>
-      String(p.categoria_id) === String(catId) && getDishSubcat(p),
+    (p) => platoInCategory(p, catId) && getDishSubcat(p),
   );
   if (hasSubcats && ACTIVE_SUBCAT === "all") {
     const groups = new Map();
