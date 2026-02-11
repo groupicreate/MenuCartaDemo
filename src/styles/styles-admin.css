@@ -1450,6 +1450,11 @@ h1 svg {
     gap: 6px;
 }
 
+.plato-gallery-item:focus-visible {
+    outline: 2px solid var(--accent-ui);
+    outline-offset: 2px;
+}
+
 .plato-gallery-item:hover {
     border-color: var(--accent-ui);
     box-shadow: 0 0 0 2px var(--accent-soft);
@@ -1480,6 +1485,48 @@ h1 svg {
 .plato-gallery-meta {
     color: var(--muted);
     font-size: 11px;
+}
+
+.plato-gallery-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 2px;
+}
+
+.plato-gallery-pick,
+.plato-gallery-delete {
+    min-height: 34px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--panel-3);
+    color: var(--text);
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.plato-gallery-pick:hover {
+    border-color: var(--accent-ui);
+    color: var(--accent-ui);
+    background: var(--accent-soft-alt);
+}
+
+.plato-gallery-delete {
+    border-color: #7a2424;
+    color: #ffb3b3;
+}
+
+.plato-gallery-delete:hover {
+    border-color: #ff5f5f;
+    color: #ffd1d1;
+    background: rgba(165, 35, 35, 0.22);
+}
+
+.plato-gallery-pick:disabled,
+.plato-gallery-delete:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
 .plato-gallery-empty {

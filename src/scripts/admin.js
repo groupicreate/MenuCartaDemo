@@ -488,6 +488,7 @@ async function listStorageImagesInFolder(prefix) {
         images.push({
           name: item.name,
           url,
+          path,
           updatedAt: item?.updated_at || item?.created_at || "",
           folder: prefix.split("/").slice(-1)[0] || "platos",
         });
@@ -531,6 +532,33 @@ async function fetchDishGalleryImages() {
   return uniqueByUrl;
 }
 
+async function deleteDishGalleryImage(item) {
+  const fileName = safeText(item?.name) || "imagen";
+  const filePath = safeText(item?.path);
+  if (!filePath) return false;
+
+  const ok = confirm(
+    `¿Borrar esta imagen de Storage?\n\n${fileName}\n\nSi está en uso (platos, portada, logo o fallback), dejará de mostrarse hasta que pongas otra.`,
+  );
+  if (!ok) return false;
+
+  const { error } = await supabase.storage.from(STORAGE_BUCKET).remove([filePath]);
+  if (error) {
+    throw new Error(`No se pudo borrar la imagen: ${error.message}`);
+  }
+
+  const currentUrl = safeText(platoImagenUrl?.value).trim();
+  if (currentUrl && currentUrl === safeText(item?.url).trim()) {
+    setPlatoImageFromUrl("", {
+      status:
+        "La imagen seleccionada fue borrada. Guarda el plato para aplicar el cambio.",
+    });
+  } else {
+    setPlatoImageStatus("Imagen borrada de tu galería.");
+  }
+  return true;
+}
+
 function renderPlatoGalleryGrid(items) {
   if (!platoImagenGalleryGrid) return;
   platoImagenGalleryGrid.innerHTML = "";
@@ -546,9 +574,10 @@ function renderPlatoGalleryGrid(items) {
 
   const selectedUrl = safeText(platoImagenUrl?.value).trim();
   items.forEach((item) => {
-    const card = document.createElement("button");
-    card.type = "button";
+    const card = document.createElement("div");
     card.className = "plato-gallery-item";
+    card.setAttribute("role", "button");
+    card.setAttribute("tabindex", "0");
     if (item.url === selectedUrl) card.classList.add("is-selected");
     card.title = item.name;
 
@@ -566,14 +595,60 @@ function renderPlatoGalleryGrid(items) {
     meta.className = "plato-gallery-meta";
     meta.textContent = STORAGE_FOLDER_LABELS[item.folder] || safeText(item.folder);
 
-    card.appendChild(img);
-    card.appendChild(caption);
-    card.appendChild(meta);
-    card.addEventListener("click", () => {
+    const actions = document.createElement("div");
+    actions.className = "plato-gallery-actions";
+
+    const useBtn = document.createElement("button");
+    useBtn.type = "button";
+    useBtn.className = "plato-gallery-pick";
+    useBtn.textContent = "Usar";
+
+    const deleteBtn = document.createElement("button");
+    deleteBtn.type = "button";
+    deleteBtn.className = "plato-gallery-delete";
+    deleteBtn.textContent = "Borrar";
+
+    const selectItem = () => {
       setPlatoImageFromUrl(item.url, {
         status: "Imagen seleccionada desde tu galería.",
       });
       closePlatoImageGalleryModal();
+    };
+
+    useBtn.addEventListener("click", (evt) => {
+      evt.stopPropagation();
+      selectItem();
+    });
+
+    deleteBtn.addEventListener("click", async (evt) => {
+      evt.stopPropagation();
+      deleteBtn.disabled = true;
+      deleteBtn.textContent = "Borrando...";
+      try {
+        const deleted = await deleteDishGalleryImage(item);
+        if (deleted) {
+          await refreshPlatoImageGallery();
+          return;
+        }
+      } catch (error) {
+        alert(error?.message || "No se pudo borrar la imagen.");
+      }
+      deleteBtn.disabled = false;
+      deleteBtn.textContent = "Borrar";
+    });
+
+    actions.appendChild(useBtn);
+    actions.appendChild(deleteBtn);
+
+    card.appendChild(img);
+    card.appendChild(caption);
+    card.appendChild(meta);
+    card.appendChild(actions);
+    card.addEventListener("click", selectItem);
+    card.addEventListener("keydown", (evt) => {
+      if (evt.key !== "Enter" && evt.key !== " ") return;
+      evt.preventDefault();
+      selectItem();
     });
 
     platoImagenGalleryGrid.appendChild(card);
