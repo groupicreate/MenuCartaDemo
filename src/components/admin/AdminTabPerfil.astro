@@ -207,71 +207,95 @@
         <p class="section-hint">URL directa o imagen desde Storage.</p>
       </div>
       <div class="section-body">
-        <div class="grid-2">
-          <div class="field">
-            <label>Portada (URL)</label>
-            <input id="perfilPortadaUrl" placeholder="https://..." />
-          </div>
-          <div class="field">
-            <label>Portada (subir imagen)</label>
-            <input id="perfilPortadaFile" type="file" accept="image/*" />
-            <small class="hint">
-              Usa Storage (bucket) para subir sin tocar GitHub.
-            </small>
-          </div>
+        <div class="media-config-grid">
+          <article class="media-config-card">
+            <div class="media-config-head">
+              <h5>Portada principal</h5>
+              <p>Hero de la carta</p>
+            </div>
+            <div class="grid-2">
+              <div class="field">
+                <label>Portada (URL)</label>
+                <input id="perfilPortadaUrl" placeholder="https://..." />
+              </div>
+              <div class="field">
+                <label>Portada (subir imagen)</label>
+                <input id="perfilPortadaFile" type="file" accept="image/*" />
+                <small class="hint">
+                  Usa Storage (bucket) para subir sin tocar GitHub.
+                </small>
+              </div>
+            </div>
+
+            <div
+              id="perfilPortadaPreview"
+              class="image-preview"
+              style="display: none"
+            ></div>
+          </article>
+
+          <article class="media-config-card">
+            <div class="media-config-head">
+              <h5>Logo / emblema</h5>
+              <p>Superpuesto en portada</p>
+            </div>
+            <div class="grid-2">
+              <div class="field">
+                <label>Logo / emblema (URL)</label>
+                <input id="perfilLogoUrl" placeholder="https://..." />
+                <small class="hint">
+                  Se muestra sobre la portada en la carta pública.
+                </small>
+              </div>
+              <div class="field">
+                <label>Logo / emblema (subir imagen)</label>
+                <input id="perfilLogoFile" type="file" accept="image/*" />
+                <small class="hint">
+                  Si no hay logo, simplemente no se muestra.
+                </small>
+              </div>
+            </div>
+
+            <div
+              id="perfilLogoPreview"
+              class="image-preview"
+              style="display: none"
+            ></div>
+          </article>
+
+          <article class="media-config-card">
+            <div class="media-config-head">
+              <h5>Imagen fallback de platos</h5>
+              <p>Solo si el plato no tiene foto</p>
+            </div>
+            <div class="grid-2">
+              <div class="field">
+                <label>Imagen por defecto de platos (URL)</label>
+                <input id="perfilPlatoDefaultUrl" placeholder="https://..." />
+                <small class="hint">
+                  Se usa solo cuando un plato no tiene imagen propia.
+                </small>
+              </div>
+              <div class="field">
+                <label>Imagen por defecto de platos (subir imagen)</label>
+                <input
+                  id="perfilPlatoDefaultFile"
+                  type="file"
+                  accept="image/*"
+                />
+                <small class="hint">
+                  Si no subes ninguna, los platos sin foto se verán en blanco.
+                </small>
+              </div>
+            </div>
+
+            <div
+              id="perfilPlatoDefaultPreview"
+              class="image-preview"
+              style="display: none"
+            ></div>
+          </article>
         </div>
-
-        <div
-          id="perfilPortadaPreview"
-          class="image-preview"
-          style="display: none"
-        ></div>
-
-        <div class="grid-2">
-          <div class="field">
-            <label>Logo / emblema (URL)</label>
-            <input id="perfilLogoUrl" placeholder="https://..." />
-            <small class="hint">
-              Se muestra sobre la portada en la carta pública.
-            </small>
-          </div>
-          <div class="field">
-            <label>Logo / emblema (subir imagen)</label>
-            <input id="perfilLogoFile" type="file" accept="image/*" />
-            <small class="hint">
-              Si no hay logo, simplemente no se muestra.
-            </small>
-          </div>
-        </div>
-
-        <div
-          id="perfilLogoPreview"
-          class="image-preview"
-          style="display: none"
-        ></div>
-
-        <div class="grid-2">
-          <div class="field">
-            <label>Imagen por defecto de platos (URL)</label>
-            <input id="perfilPlatoDefaultUrl" placeholder="https://..." />
-            <small class="hint">
-              Se usa solo cuando un plato no tiene imagen propia.
-            </small>
-          </div>
-          <div class="field">
-            <label>Imagen por defecto de platos (subir imagen)</label>
-            <input id="perfilPlatoDefaultFile" type="file" accept="image/*" />
-            <small class="hint">
-              Si no subes ninguna, los platos sin foto se verán en blanco.
-            </small>
-          </div>
-        </div>
-
-        <div
-          id="perfilPlatoDefaultPreview"
-          class="image-preview"
-          style="display: none"
-        ></div>
       </div>
     </section>
 
